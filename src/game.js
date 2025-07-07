@@ -107,11 +107,6 @@ function onMapRotate() {
     }
 }
 
-// In your map.on('load', ...) callback, add:
-if (map) {
-    map.on('rotate', onMapRotate);
-    map.on('dragrotate', onMapRotate);
-}
 
 // Optionally, provide a button to reset map rotation and re-enable arrow
 function resetMapRotation() {
@@ -243,6 +238,8 @@ function onPosition(position) {
             setupOrientationListener();
             // updateArrow(currentHeading);
             drawRoute(userCoords, treasureCoords);
+            map.on('rotate', onMapRotate);
+            map.on('dragrotate', onMapRotate);
         });
     } else {
         updatePirateMarker(userCoords, map);
