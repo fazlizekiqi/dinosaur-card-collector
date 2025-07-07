@@ -9,6 +9,15 @@ import {showCard} from "./showCard.js";
 // <!-- Place this just before the closing </body> tag -->
 const fullscreenBtn = document.getElementById('fullscreen-btn');
 
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (event) => {
+    const now = new Date().getTime();
+    if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+    }
+    lastTouchEnd = now;
+}, false);
+
 fullscreenBtn.addEventListener('click', () => {
     const doc = document.documentElement;
 
@@ -226,7 +235,7 @@ function startTracking() {
         showMessage('Geolocation is not supported by your browser.');
         return;
     }
-    showMessage('Go get that treasure.');
+    showMessage('Go find that egg.');
     navigator.geolocation.getCurrentPosition(onPosition, onError, {enableHighAccuracy: true, timeout: 20000, maximumAge:0});
     navigator.geolocation.watchPosition(pos => {
         onPosition(pos);
