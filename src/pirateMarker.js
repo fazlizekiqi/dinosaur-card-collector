@@ -2,7 +2,7 @@
 import maplibregl from 'maplibre-gl';
 import {getBearingBetween} from "./utils.js";
 
-const PIRATE_ICON = "/palentologist.png";
+const PIRATE_ICON = "palentologist.png";
 let userMarker = null;
 let pirateIconEl = null;
 
