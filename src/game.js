@@ -216,12 +216,12 @@ function onPosition(position) {
                 map.setMaxZoom(DEFAULT_ZOOM + 2);
             });
             setupOrientationListener();
-            updateArrow(currentHeading);
+            // updateArrow(currentHeading);
             drawRoute(userCoords, treasureCoords);
         });
     } else {
         updatePirateMarker(userCoords, map);
-        updateArrow(currentHeading);
+        // updateArrow(currentHeading);
         drawRoute(userCoords, treasureCoords);
     }
     checkWinCondition();
