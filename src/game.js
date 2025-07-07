@@ -67,11 +67,10 @@ const marker = document.querySelector('.maplibregl-user-location-dot');
 if (marker) marker.style.display = 'none';
 
 
-
 function checkWinCondition() {
     if (!userCoords || !treasureCoords || win) return;
     const dist = distanceMeters(userCoords, treasureCoords);
-    if(dist <= 30){
+    if (dist <= 30) {
         showMessage("🏴☠️ You are very close. Don't give up");
     }
     if (dist <= 15) {
@@ -81,7 +80,10 @@ function checkWinCondition() {
     }
 }
 
+let arrowFollowsDevice = true;
+
 function handleOrientation(event) {
+    if (!arrowFollowsDevice) return;
     let heading;
     if (typeof event.webkitCompassHeading !== "undefined") {
         heading = event.webkitCompassHeading;
@@ -91,9 +93,30 @@ function handleOrientation(event) {
     if (heading !== undefined && heading !== null) {
         if (heading < 0) heading += 360;
         currentHeading = heading;
-        // Update arrow to show device heading only
         updateArrow(currentHeading);
     }
+}
+
+
+function onMapRotate() {
+    // If the map is rotated away from north, stop arrow following device
+    if (Math.abs(map.getBearing()) > 1) {
+        arrowFollowsDevice = false;
+    } else {
+        arrowFollowsDevice = true;
+    }
+}
+
+// In your map.on('load', ...) callback, add:
+if (map) {
+    map.on('rotate', onMapRotate);
+    map.on('dragrotate', onMapRotate);
+}
+
+// Optionally, provide a button to reset map rotation and re-enable arrow
+function resetMapRotation() {
+    map.rotateTo(0, {duration: 500});
+    arrowFollowsDevice = true;
 }
 
 function setupOrientationListener() {
@@ -108,11 +131,13 @@ function setupOrientationListener() {
                             window.addEventListener("deviceorientation", handleOrientation, true);
                         }
                     })
-                    .catch(() => {});
+                    .catch(() => {
+                    });
             } else {
                 window.addEventListener("deviceorientation", handleOrientation, true);
             }
         }
+
         window.addEventListener("click", requestOrientationPermission, {once: true});
     }
 }
@@ -153,7 +178,7 @@ function drawRoute(userCoords, treasureCoords) {
             }
         });
     }).catch(() => {
-        if(userCoords && treasureCoords) {
+        if (userCoords && treasureCoords) {
 
             map.addSource('user-to-treasure', {
                 type: 'geojson',
@@ -237,7 +262,11 @@ function startTracking() {
         return;
     }
     showMessage('Go find that egg.');
-    navigator.geolocation.getCurrentPosition(onPosition, onError, {enableHighAccuracy: true, timeout: 20000, maximumAge:0});
+    navigator.geolocation.getCurrentPosition(onPosition, onError, {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 0
+    });
     navigator.geolocation.watchPosition(pos => {
         onPosition(pos);
         checkWinCondition();
