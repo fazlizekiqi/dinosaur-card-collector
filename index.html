@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pirate Treasure Map Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- MapLibre GL JS -->
+
+<!--  <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet"/>-->
+
+  <style>
+
+  </style>
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+<div id="game-message"></div>
+<div id="map"></div>
+<!-- Place this just before the closing </body> tag -->
+
+<button id="fullscreen-btn" title="Fullscreen" style="position:fixed;bottom:24px;left:24px;z-index:1000;background:rgba(255,255,255,0.14);border:none;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.55);width:48px;height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+  <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path fill="#000000" d="m160 96.064 192 .192a32 32 0 0 1 0 64l-192-.192V352a32 32 0 0 1-64 0V96h64v.064zm0 831.872V928H96V672a32 32 0 1 1 64 0v191.936l192-.192a32 32 0 1 1 0 64l-192 .192zM864 96.064V96h64v256a32 32 0 1 1-64 0V160.064l-192 .192a32 32 0 1 1 0-64l192-.192zm0 831.872-192-.192a32 32 0 0 1 0-64l192 .192V672a32 32 0 1 1 64 0v256h-64v-.064z"></path></g></svg>
+</button>
+
+
+<div id="t-rex-celebration" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center; flex-direction:column;">
+  <img src="t-rex.png" alt="T-Rex" style="width:300px;"/>
+  <canvas id="fireworks-canvas" style="position:absolute;top:0;left:0;width:100vw;height:100vh;pointer-events:none;"></canvas>
+</div>
+
+<script type="module" src="./src/game.js"></script>
+</body>
+</html>
