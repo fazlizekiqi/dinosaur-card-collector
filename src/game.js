@@ -91,7 +91,8 @@ function handleOrientation(event) {
     if (heading !== undefined && heading !== null) {
         if (heading < 0) heading += 360;
         currentHeading = heading;
-        updateArrow(userCoords, treasureCoords, currentHeading);
+        // Update arrow to show device heading only
+        updateArrow(currentHeading);
     }
 }
 
@@ -215,12 +216,12 @@ function onPosition(position) {
                 map.setMaxZoom(DEFAULT_ZOOM + 2);
             });
             setupOrientationListener();
-            updateArrow(userCoords, treasureCoords, currentHeading);
+            updateArrow(currentHeading);
             drawRoute(userCoords, treasureCoords);
         });
     } else {
         updatePirateMarker(userCoords, map);
-        updateArrow(userCoords, treasureCoords, currentHeading);
+        updateArrow(currentHeading);
         drawRoute(userCoords, treasureCoords);
     }
     checkWinCondition();

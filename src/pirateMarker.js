@@ -101,18 +101,14 @@ export function updatePirateMarker(coords, map) {
     }
 }
 
-export function updateArrow(userCoords, treasureCoords, currentHeading) {
-    if (!userCoords || !treasureCoords || currentHeading === null) return;
-    const bearingToTreasure = getBearingBetween(userCoords, treasureCoords);
-    let rotation = bearingToTreasure - currentHeading;
-    if (rotation > 180) rotation -= 360;
-    if (rotation < -180) rotation += 360;
+export function updateArrow(currentHeading) {
+    if (currentHeading === null) return;
 
     if (pirateIconEl) {
         const arrow = pirateIconEl.querySelector('#arrow');
         if (arrow) {
-            // Move arrow out from center (e.g. 48px for bigger arrow)
-            arrow.style.transform = `rotate(${rotation}deg) translateY(-48px)`;
+            // Rotate arrow to match device heading, move out from center
+            arrow.style.transform = `rotate(${currentHeading}deg) translateY(-48px)`;
         }
     }
 }
