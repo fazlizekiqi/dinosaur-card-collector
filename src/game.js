@@ -8,11 +8,40 @@ import {showCard} from "./showCard.js";
 
 // <!-- Place this just before the closing </body> tag -->
 const fullscreenBtn = document.getElementById('fullscreen-btn');
+
 fullscreenBtn.addEventListener('click', () => {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
+    const doc = document.documentElement;
+
+    // Check if fullscreen is active
+    const isFullscreen = document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement;
+
+    if (!isFullscreen) {
+        // Request fullscreen (handle various vendor prefixes)
+        if (doc.requestFullscreen) {
+            doc.requestFullscreen();
+        } else if (doc.webkitRequestFullscreen) { // Safari
+            doc.webkitRequestFullscreen();
+        } else if (doc.mozRequestFullScreen) { // Firefox
+            doc.mozRequestFullScreen();
+        } else if (doc.msRequestFullscreen) { // IE/Edge
+            doc.msRequestFullscreen();
+        } else {
+            alert('Fullscreen API is not supported on this browser.');
+        }
     } else {
-        document.exitFullscreen();
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
     }
 });
 
