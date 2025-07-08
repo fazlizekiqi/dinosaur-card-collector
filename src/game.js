@@ -224,17 +224,76 @@ function onPosition(position) {
             treasureCoords = randomPointNear(userCoords, TREASURE_DISTANCE_RADIUS);
             addTreasureMarker(treasureCoords, map);
 
+            const cloudOverlay = document.getElementById('cloud-overlay');
+            const clouds = [
+                document.querySelector('.cloud1'),
+                document.querySelector('.cloud2'),
+                document.querySelector('.cloud3'),
+                document.querySelector('.cloud4'),
+                document.querySelector('.cloud5'),
+                document.querySelector('.cloud6'),
+                document.querySelector('.cloud7'),
+                document.querySelector('.cloud8')
+            ];
+
+            cloudOverlay.style.display = 'block';
+            clouds.forEach(cloud => {
+                cloud.style.opacity = '1';
+                cloud.style.transform = 'translate(0,0)';
+            });
+
+            const transitionDuration = 2000; // ms
+            const startTime = performance.now();
+
+            const cloudMovements = clouds.map(() => {
+                const angle = Math.random() * 2 * Math.PI; // random angle in radians
+                const distance = 500 + Math.random() * 150; // random distance between 120 and 270 px
+                return {
+                    dx: Math.cos(angle) * distance,
+                    dy: Math.sin(angle) * distance
+                };
+            });
+
+            function animateClouds(now) {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / transitionDuration, 1);
+
+
+                clouds.forEach((cloud, i) => {
+                    cloud.style.opacity = String(1 - progress);
+                    const { dx, dy } = cloudMovements[i];
+                    cloud.style.transform = `translate(${progress * dx}px, ${progress * dy}px)`;
+                });
+
+                if (progress < 1) {
+                    requestAnimationFrame(animateClouds);
+                }
+            }
+
             map.flyTo({
                 center: [longitude, latitude],
                 zoom: DEFAULT_ZOOM + 2,
                 speed: 1.2,
                 curve: 1.5,
+
                 essential: true
             });
+
+
+            requestAnimationFrame(animateClouds);
+
             map.once('moveend', () => {
                 map.setMinZoom(DEFAULT_ZOOM + 2);
                 map.setMaxZoom(DEFAULT_ZOOM + 2);
+
+                setTimeout(() => {
+                    cloudOverlay.style.display = 'none';
+                    clouds.forEach(cloud => {
+                        cloud.style.transform = 'translate(0,0)';
+                    });
+                }, 200);
             });
+
             setupOrientationListener();
             // updateArrow(currentHeading);
             drawRoute(userCoords, treasureCoords);

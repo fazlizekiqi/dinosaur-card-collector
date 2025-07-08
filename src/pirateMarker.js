@@ -6,6 +6,15 @@ const PIRATE_ICON = "palentologist.png";
 let userMarker = null;
 let pirateIconEl = null;
 
+const foundCards = [];
+
+
+export function addCardToUser(card){
+    foundCards.push(card);
+}
+
+
+
 
 export function createAnimatedPirateIcon() {
     // Marker container
