@@ -3,8 +3,15 @@ import maplibregl from 'maplibre-gl';
 const TREASURE_ICON = "treasure.png";
 let treasureMarker;
 
+
 // --- Treasure Marker ---
 export function addTreasureMarker(coords, map) {
+
+    if (treasureMarker) {
+        treasureMarker.remove();
+        treasureMarker = null;
+    }
+
     // Create container div
     const container = document.createElement('div');
     container.className = 'treasure-marker-container';

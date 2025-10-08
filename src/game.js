@@ -4,12 +4,24 @@ import {showMessage, hideMessage} from "./ui.js";
 import {randomPointNear, distanceMeters, getBearingBetween} from "./utils.js";
 import {addTreasureMarker} from "./treasureMarker.js";
 import {injectPirateCSS, updatePirateMarker, updateArrow, createAnimatedPirateIcon} from "./pirateMarker.js";
-import {showCard} from "./showCard.js";
+import {addCollectedCard, getNextCard, hideCard, initializeCards, showCard} from "./showCard.js";
+
+
 
 // <!-- Place this just before the closing </body> tag -->
 const fullscreenBtn = document.getElementById('fullscreen-btn');
+const dinoModal = document.getElementById('dino-collector-modal');
+const closeDinoModalBtn = document.getElementById('close-dino-modal-btn');
 
+fullscreenBtn.addEventListener('click', () => {
+    dinoModal.classList.add('show');
+});
+
+closeDinoModalBtn.addEventListener('click', () => {
+    dinoModal.classList.remove('show');
+});
 let lastTouchEnd = 0;
+
 document.addEventListener('touchend', (event) => {
     const now = new Date().getTime();
     if (now - lastTouchEnd <= 300) {
@@ -17,42 +29,6 @@ document.addEventListener('touchend', (event) => {
     }
     lastTouchEnd = now;
 }, false);
-
-fullscreenBtn.addEventListener('click', () => {
-    const doc = document.documentElement;
-
-    // Check if fullscreen is active
-    const isFullscreen = document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        document.mozFullScreenElement ||
-        document.msFullscreenElement;
-
-    if (!isFullscreen) {
-        // Request fullscreen (handle various vendor prefixes)
-        if (doc.requestFullscreen) {
-            doc.requestFullscreen();
-        } else if (doc.webkitRequestFullscreen) { // Safari
-            doc.webkitRequestFullscreen();
-        } else if (doc.mozRequestFullScreen) { // Firefox
-            doc.mozRequestFullScreen();
-        } else if (doc.msRequestFullscreen) { // IE/Edge
-            doc.msRequestFullscreen();
-        } else {
-            alert('Fullscreen API is not supported on this browser.');
-        }
-    } else {
-        // Exit fullscreen
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
-        }
-    }
-});
 
 const MAP_STYLE = "https://api.maptiler.com/maps/0197dc02-f415-76e6-a860-fc5b1805cd22/style.json?key=4XkkKpwhltbHeFPyQbNh";
 const DEFAULT_ZOOM = 15;
@@ -67,6 +43,7 @@ const marker = document.querySelector('.maplibregl-user-location-dot');
 if (marker) marker.style.display = 'none';
 
 
+
 function checkWinCondition() {
     if (!userCoords || !treasureCoords || win) return;
     const dist = distanceMeters(userCoords, treasureCoords);
@@ -76,9 +53,37 @@ function checkWinCondition() {
     if (dist <= 15) {
         win = true;
         showMessage("You found it. Great job.");
+        const card = getNextCard();
+        // addCollectedCard(card);
+// Add this after your addCollectedCard function
+
+
         showCard();
+        generateRandomTreasure()
+        setTimeout(()=> {
+            win = false;
+            hideCard()
+            showMessage("Let's go for the next one. ");
+
+        }, 5000)
     }
 }
+
+
+// Click to show selected cards
+document.getElementById("collected-cards").addEventListener("click", function(e) {
+    if (e.target.tagName === "IMG") {
+
+        const modal = document.getElementById("card-modal");
+        const modalImg = document.getElementById("modal-card-img");
+        modalImg.src = e.target.src;
+        modal.classList.add("show");
+    }
+});
+
+document.getElementById("close-modal-btn").addEventListener("click", function() {
+    document.getElementById("card-modal").classList.remove("show");
+});
 
 let arrowFollowsDevice = true;
 
@@ -203,6 +208,12 @@ function drawRoute(userCoords, treasureCoords) {
     });
 }
 
+function generateRandomTreasure() {
+    const TREASURE_DISTANCE_RADIUS = 150;
+    treasureCoords = randomPointNear(userCoords, TREASURE_DISTANCE_RADIUS);
+    addTreasureMarker(treasureCoords, map);
+}
+
 // --- Main Game Flow ---
 function onPosition(position) {
     const {latitude, longitude} = position.coords;
@@ -220,10 +231,8 @@ function onPosition(position) {
         map.on('load', () => {
             injectPirateCSS();
             updatePirateMarker(userCoords, map);
-            const TREASURE_DISTANCE_RADIUS = 150;
-            treasureCoords = randomPointNear(userCoords, TREASURE_DISTANCE_RADIUS);
-            addTreasureMarker(treasureCoords, map);
-
+            generateRandomTreasure();
+            enablePirateMovement(userCoords, map); // Remove before push
             const cloudOverlay = document.getElementById('cloud-overlay');
             const clouds = [
                 document.querySelector('.cloud1'),
@@ -320,7 +329,7 @@ function startTracking() {
     showMessage('Go find that egg.');
     navigator.geolocation.getCurrentPosition(onPosition, onError, {
         enableHighAccuracy: true,
-        timeout: 20000,
+        timeout: 25000,
         maximumAge: 0
     });
     navigator.geolocation.watchPosition(pos => {
@@ -329,6 +338,38 @@ function startTracking() {
     }, onError, {enableHighAccuracy: true, maximumAge: 2000, timeout: 7000});
 }
 
+
+window.devMode = false;  // Enable arrow-key movement
+const moveStep = 0.00025;
+export function enablePirateMovement(currentCoords, map) {
+    document.addEventListener('keydown', (event) => {
+        let [lat, lng] = currentCoords;
+        if (!window.devMode) return;
+        switch (event.key) {
+            case 'ArrowUp':
+                lat += moveStep;
+                break;
+            case 'ArrowDown':
+                lat -= moveStep;
+                break;
+            case 'ArrowLeft':
+                lng -= moveStep;
+                break;
+            case 'ArrowRight':
+                lng += moveStep;
+                break;
+            default:
+                return; // ignore other keys
+        }
+
+        currentCoords = [lat, lng];
+        userCoords = currentCoords;
+        updatePirateMarker(currentCoords, map);
+        checkWinCondition()
+    });
+}
+
+initializeCards()
 hideMessage();
 showMessage('Finding your location...');
 window.onload = startTracking;

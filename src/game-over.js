@@ -1,21 +1,18 @@
 
+let fireworksAnimationId = null; // store animation frame ID globally
+let fireworksParticles = [];     // store particles globally for cleanup
+
 export function startFireworks() {
     const canvas = document.getElementById('fireworks-canvas');
     if (!canvas) return;
+
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     const ctx = canvas.getContext('2d');
-    let particles = [];
+    fireworksParticles = [];
 
     function goldColor() {
-        // Gold/yellow/orange palette
-        const golds = [
-            '#FFD700', // gold
-            '#FFF700', // bright yellow
-            '#FFB300', // orange gold
-            '#FFEC8B', // light gold
-            '#FFFACD'  // lemon chiffon
-        ];
+        const golds = ['#FFD700', '#FFF700', '#FFB300', '#FFEC8B', '#FFFACD'];
         return golds[Math.floor(Math.random() * golds.length)];
     }
 
@@ -29,21 +26,23 @@ export function startFireworks() {
             vy: Math.sin(angle) * speed,
             alpha: 1,
             color: goldColor(),
-            sparkle: Math.random() > 0.7 // 30% chance to sparkle
+            sparkle: Math.random() > 0.7
         };
     }
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (particles.length < 120) {
+        if (fireworksParticles.length < 120) {
             for (let i = 0; i < 12; i++) {
-                particles.push(createParticle());
+                fireworksParticles.push(createParticle());
             }
         }
-        particles.forEach(p => {
+
+        fireworksParticles.forEach(p => {
             p.x += p.vx;
             p.y += p.vy;
             p.alpha -= 0.012;
+
             ctx.globalAlpha = p.alpha;
             ctx.beginPath();
             ctx.arc(p.x, p.y, 4, 0, 2 * Math.PI);
@@ -52,7 +51,7 @@ export function startFireworks() {
             ctx.shadowBlur = 20;
             ctx.fill();
 
-            // Sparkle effect
+            // sparkle
             if (p.sparkle && Math.random() > 0.6) {
                 ctx.globalAlpha = p.alpha * 0.8;
                 ctx.beginPath();
@@ -63,12 +62,37 @@ export function startFireworks() {
                 ctx.fill();
             }
         });
+
         ctx.globalAlpha = 1;
         ctx.shadowBlur = 0;
-        particles = particles.filter(p => p.alpha > 0);
-        if (particles.length > 0) {
-            requestAnimationFrame(animate);
+        fireworksParticles = fireworksParticles.filter(p => p.alpha > 0);
+
+        if (fireworksParticles.length > 0) {
+            fireworksAnimationId = requestAnimationFrame(animate);
         }
     }
-    animate();
+
+    // Start animation
+    fireworksAnimationId = requestAnimationFrame(animate);
+}
+
+export function stopFireworks() {
+    const canvas = document.getElementById('fireworks-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    // Stop ongoing animation
+    if (fireworksAnimationId) {
+        cancelAnimationFrame(fireworksAnimationId);
+        fireworksAnimationId = null;
+    }
+
+    // Clear particles and canvas
+    fireworksParticles = [];
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Optional: hide or remove the canvas
+    // canvas.style.display = 'none';
+    // OR
+    // canvas.remove();
 }

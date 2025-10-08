@@ -81,3 +81,101 @@ html, body {
 .cloud6 { bottom: 0; left: 0; }
 .cloud7 { bottom: 0; left: 35%; }
 .cloud8 { bottom: 0; right: 0; }
+
+/*COLLECTED CARDS */
+#collected-cards {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 10vh; /* Takes 10% of the viewport height */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 4px 8px;
+    overflow-x: auto;
+    z-index: 1000;
+    backdrop-filter: blur(2px);
+}
+
+#collected-cards img {
+    height: 100%; /* Keeps thumbnails small */
+    /*aspect-ratio: 1 / 1;*/
+    /*border-radius: 8px;*/
+    /*object-fit: cover;*/
+    transition: transform 0.2s;
+}
+
+#collected-cards img:hover {
+    transform: scale(1.1);
+}
+
+
+/*Show collected cards on click*/
+#card-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.7);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#card-modal.show {
+    display: flex;
+}
+
+#close-modal-btn:hover {
+    background: #f0f0f0;
+    color: #382110;
+}
+
+
+/*Dinocollector modal */
+#dino-collector-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.7);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#dino-collector-modal.show {
+    display: flex;
+}
+
+.speech-bubble {
+    background: rgba(252, 237, 195, 0.95);
+    color: #382110;
+    border-radius: 16px;
+    padding: 18px 32px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    position: relative;
+    max-width: 340px;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.speech-bubble:after {
+    content: '';
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 18px 18px 0;
+    border-style: solid;
+    border-color: rgba(252,237,195,0.95) transparent transparent transparent;
+    display: block;
+    width: 0;
+}
+

@@ -95,8 +95,6 @@ export function injectPirateCSS() {
 
 export function updatePirateMarker(coords, map) {
     if (!userMarker) {
-
-
         pirateIconEl = createAnimatedPirateIcon();
         userMarker = new maplibregl.Marker({element: pirateIconEl, anchor: 'center'})
             .setLngLat([coords[1], coords[0]]) // [lng, lat]
@@ -109,6 +107,7 @@ export function updatePirateMarker(coords, map) {
         return userMarker
     }
 }
+
 
 export function updateArrow(currentHeading) {
     if (currentHeading === null) return;
