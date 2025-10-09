@@ -1,5 +1,6 @@
 import { loginWithGoogle, register, continueAsGuest, loginWithEmail } from './auth.js';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import {initGame} from "./game.js";
 
 const googleBtn = document.getElementById('google-login');
 const guestBtn = document.getElementById('guest-login');
@@ -94,10 +95,7 @@ function loadGame() {
         .then(html => {
             document.body.innerHTML = html;
             // Dynamically inject game.js script
-            const script = document.createElement('script');
-            script.type = 'module';
-            script.src = 'src/game.js';
-            document.body.appendChild(script);
+            initGame()
         })
         .catch(err => {
             alert('Failed to load game.');
