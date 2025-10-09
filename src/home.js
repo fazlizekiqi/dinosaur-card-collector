@@ -60,7 +60,7 @@ function showSpinner() {
         spinner.style.alignItems = 'center';
         spinner.style.justifyContent = 'center';
         spinner.style.zIndex = '10001';
-        spinner.innerHTML = `<img src="public/treasure.png" alt="Loading..." class="spinner-egg">`;
+        spinner.innerHTML = `<img src="treasure.png" alt="Loading..." class="spinner-egg">`;
         document.body.appendChild(spinner);
     }
     spinner.style.display = 'flex';
@@ -87,22 +87,28 @@ function hideError() {
 
 // Check authentication status on page load
 const auth = getAuth();
+
+function loadGame() {
+    fetch('game.html')
+        .then(response => response.text())
+        .then(html => {
+            document.body.innerHTML = html;
+            // Dynamically inject game.js script
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = 'src/game.js';
+            document.body.appendChild(script);
+        })
+        .catch(err => {
+            alert('Failed to load game.');
+            console.error(err);
+        });
+}
+
 onAuthStateChanged(auth, (user) => {
     if (user) {
         // User is authenticated, load the game
-        fetch('src/components/game/game.html')
-            .then(response => response.text())
-            .then(html => {
-                document.body.innerHTML = html;
-                const script = document.createElement('script');
-                script.type = 'module';
-                script.src = 'src/components/game/game.js';
-                document.body.appendChild(script);
-            })
-            .catch(err => {
-                alert('Failed to load game.');
-                console.error(err);
-            });
+        loadGame();
     } else {
         // User is not authenticated, show home screen and message
         const homeContainer = document.querySelector('.home-container');

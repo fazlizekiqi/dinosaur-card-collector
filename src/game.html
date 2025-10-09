@@ -1,0 +1,80 @@
+<div id="game-message"></div>
+<div id="collected-cards">
+    <!-- Dynamically filled by JS -->
+</div>
+<div id="map"></div>
+<!-- Place this just before the closing </body> tag -->
+
+<button id="fullscreen-btn" title="Fullscreen"
+        style="font-size: 16px;position:fixed;bottom:24px;left:24px;z-index:1000;background:rgba(255,255,255,0.14);border:none;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.55);width:5rem;height:5rem; display:flex;align-items:center;justify-content:center;cursor:pointer;">
+    <img src="happy-dino-collector.png" alt="Happy Dino Collector" style="width:5em; height:auto; border-radius:5em;">
+</button>
+
+<button id="signout-btn" title="Sign Out"
+        style="font-size: 16px; position:fixed; top:24px; right:24px; z-index:1000; background:rgba(255,255,255,0.14); border:none; border-radius:50%; box-shadow:0 2px 8px rgba(0,0,0,0.55); width:4rem; height:4rem; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+    <img src="sign-out.png" alt="Sign Out" style="width:2.5em; height:auto;">
+</button>
+
+<div id="user-info" style="position:fixed;bottom:24px;right:24px;z-index:1001;padding:0.2em 0.6em;border-radius:8px;font-size:0.95em;color:#382110;min-width:60px;display:flex;align-items:center;gap:6px;background:none;box-shadow:none;font-weight:normal;">
+    <img id="user-avatar" src="" alt="User Avatar" style="width:1.5em;height:1.5em;border-radius:50%;object-fit:cover;display:none;">
+    <span id="user-name">User</span>
+</div>
+
+<div id="dino-collector-modal" class=""
+     style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:10000; justify-content:center; align-items:center; flex-direction:column;">
+    <div class="speech-bubble">
+        Hi, I'm your Dino Collector friend!<br>
+        Let's collect eggs together and become best friends!
+    </div>
+    <img src="wave-dino-collector.png" alt="Dino Collector" style="width:180px; height:auto; border-radius:16px;"/>
+    <button id="close-dino-modal-btn"
+            style="margin-top:24px; font-size:18px; background:rgba(252,237,195,0.95); color:#382110; border:none; border-radius:10px; padding:12px 32px; font-weight:bold; box-shadow:0 2px 12px rgba(0,0,0,0.2); cursor:pointer;">
+        Close
+    </button>
+</div>
+
+
+<div id="cloud-overlay"
+     style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:10;">
+    <img class="cloud cloud1" src="clouds.png"/>
+    <img class="cloud cloud2" src="clouds.png"/>
+    <img class="cloud cloud3" src="clouds.png"/>
+    <img class="cloud cloud4" src="clouds.png"/>
+    <img class="cloud cloud5" src="clouds.png"/>
+    <img class="cloud cloud6" src="clouds.png"/>
+    <img class="cloud cloud7" src="clouds.png"/>
+    <img class="cloud cloud8" src="clouds.png"/>
+</div>
+
+
+<div id="t-rex-celebration"
+     style="
+            display:none;
+            position:fixed;
+            top:0;
+            left:0;
+            width:100vw;
+            height:100vh;
+            background:rgba(0,0,0,0.7);
+            z-index:9999;
+            justify-content:center;
+            align-items:center;
+            flex-direction:column;"
+>
+    <img src="" alt="T-Rex" style="width:300px;"/>
+    <canvas id="fireworks-canvas"
+            style="position:absolute;top:0;left:0;width:100vw;height:100vh;pointer-events:none;"></canvas>
+</div>
+
+
+<div id="card-modal"
+     style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:10000; justify-content:center; align-items:center; flex-direction:column;">
+    <img id="modal-card-img" src="" alt="Collected Card"
+         style="max-width:80vw; max-height:80vh; border-radius:16px; box-shadow:0 2px 16px rgba(0,0,0,0.4);"/>
+    <button id="close-modal-btn"
+            style="margin-top:24px; font-size:18px; background:rgba(252,237,195,0.95); color:#382110; border:none; border-radius:10px; padding:12px 32px; font-weight:bold; box-shadow:0 2px 12px rgba(0,0,0,0.2); cursor:pointer;">
+        Close
+    </button>
+</div>
+
+<!--<script type="module" src="game.js"></script>-->

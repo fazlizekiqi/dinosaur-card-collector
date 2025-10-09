@@ -1,3 +1,4 @@
+<!-- Moved from src/components/game/game.html for Vite compatibility -->
 <div id="game-message"></div>
 <div id="collected-cards">
     <!-- Dynamically filled by JS -->
@@ -33,7 +34,6 @@
     </button>
 </div>
 
-
 <div id="cloud-overlay"
      style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:10;">
     <img class="cloud cloud1" src="clouds.png"/>
@@ -45,7 +45,6 @@
     <img class="cloud cloud7" src="clouds.png"/>
     <img class="cloud cloud8" src="clouds.png"/>
 </div>
-
 
 <div id="t-rex-celebration"
      style="
@@ -66,7 +65,6 @@
             style="position:absolute;top:0;left:0;width:100vw;height:100vh;pointer-events:none;"></canvas>
 </div>
 
-
 <div id="card-modal"
      style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:10000; justify-content:center; align-items:center; flex-direction:column;">
     <img id="modal-card-img" src="" alt="Collected Card"
@@ -77,4 +75,5 @@
     </button>
 </div>
 
-<script type="module" src="src/components/game/game.js"></script>
+<script type="module" src="../src/game.js"></script>
+
