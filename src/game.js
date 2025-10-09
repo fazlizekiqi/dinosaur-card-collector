@@ -408,5 +408,5 @@ export function initGame(){
     initializeCards()
     hideMessage();
     showMessage('Finding your location...');
-    window.onload = startTracking;
+    startTracking();
 }
