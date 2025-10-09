@@ -376,7 +376,7 @@ export function initGame(){
 
     document.getElementById('signout-btn').addEventListener('click', () => {
         signOut(getAuth()).then(() => {
-            window.location.href = '/'; // Redirect to homepage
+            window.location.href = '/dinosaur-card-collector/'; // Redirect to homepage
         }).catch((error) => {
             alert('Sign out failed.');
             console.error(error);
