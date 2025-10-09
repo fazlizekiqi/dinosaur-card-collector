@@ -3,7 +3,7 @@ import maplibregl from 'maplibre-gl';
 import { showMessage, hideMessage } from './ui.js';
 import { showCard, hideCard, getNextCard, initializeCards } from './showCard.js';
 import { addTreasureMarker } from './treasureMarker.js';
-import { updatePirateMarker, injectPirateCSS } from './pirateMarker.js';
+import {updatePirateMarker, injectPirateCSS, updateArrow} from './pirateMarker.js';
 import { distanceMeters, randomPointNear } from './utils.js';
 import { getAuth, signOut } from 'firebase/auth';
 
