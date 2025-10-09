@@ -7,85 +7,59 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-
-    <!-- MapLibre GL JS -->
-    <style>
-
-    </style>
     <link rel="stylesheet" href="src/style.css">
     <link rel="manifest" href="/manifest.json"/>
-
 </head>
 <body>
-<div id="game-message"></div>
-<div id="collected-cards">
-    <!-- Dynamically filled by JS -->
-</div>
-<div id="map"></div>
-<!-- Place this just before the closing </body> tag -->
+    <div class="background"></div>
+    <div class="home-container">
+        <div class="logo-section">
+            <img src="public/happy-dino-collector.png" alt="Dinosaur Collector Logo" class="game-logo" />
+            <h1 class="game-title">Dinosaur Card Collector</h1>
+            <p class="subtitle">Collect, trade, and discover dinosaurs! Choose how you want to start:</p>
+        </div>
+        <div class="login-card">
+            <button class="login-btn google" id="google-login" aria-label="Sign in with Google">
+                <img src="public/00-removebg-preview.png" alt="Google" class="btn-icon">
+                Sign in with Google
+            </button>
+            <button class="login-btn email-login" id="email-login" aria-label="Login with Email">
+                <img src="public/hands-up.png" alt="Email Login" class="btn-icon">
+                Login with Email
+            </button>
+            <button class="login-btn guest" id="guest-login" aria-label="Continue as Guest">
+                <img src="public/yippy.png" alt="Guest" class="btn-icon">
+                Continue as Guest
+            </button>
+            <br/>
 
-<button id="fullscreen-btn" title="Fullscreen"
-        style="font-size: 16px;position:fixed;bottom:24px;left:24px;z-index:1000;background:rgba(255,255,255,0.14);border:none;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.55);width:5rem;height:5rem; display:flex;align-items:center;justify-content:center;cursor:pointer;">
-    <img src="happy-dino-collector.png" alt="Happy Dino Collector" style="width:5em; height:auto; border-radius:5em;">
-</button>
-
-<div id="dino-collector-modal" class=""
-     style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:10000; justify-content:center; align-items:center; flex-direction:column;">
-    <div class="speech-bubble">
-        Hi, I'm your Dino Collector friend!<br>
-        Let's collect eggs together and become best friends!
+            <button class="login-btn email-register" id="email-register" aria-label="Register with Email">
+                <img src="public/11-removebg-preview.png" alt="Register" class="btn-icon">
+                Register with Email
+            </button>
+        </div>
     </div>
-    <img src="wave-dino-collector.png" alt="Dino Collector" style="width:180px; height:auto; border-radius:16px;"/>
-    <button id="close-dino-modal-btn"
-            style="margin-top:24px; font-size:18px; background:rgba(252,237,195,0.95); color:#382110; border:none; border-radius:10px; padding:12px 32px; font-weight:bold; box-shadow:0 2px 12px rgba(0,0,0,0.2); cursor:pointer;">
-        Close
-    </button>
-</div>
-
-
-<div id="cloud-overlay"
-     style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:10;">
-    <img class="cloud cloud1" src="clouds.png"/>
-    <img class="cloud cloud2" src="clouds.png"/>
-    <img class="cloud cloud3" src="clouds.png"/>
-    <img class="cloud cloud4" src="clouds.png"/>
-    <img class="cloud cloud5" src="clouds.png"/>
-    <img class="cloud cloud6" src="clouds.png"/>
-    <img class="cloud cloud7" src="clouds.png"/>
-    <img class="cloud cloud8" src="clouds.png"/>
-</div>
-
-
-<div id="t-rex-celebration"
-     style="
-            display:none;
-            position:fixed;
-            top:0;
-            left:0;
-            width:100vw;
-            height:100vh;
-            background:rgba(0,0,0,0.7);
-            z-index:9999;
-            justify-content:center;
-            align-items:center;
-            flex-direction:column;"
->
-    <img src="" alt="T-Rex" style="width:300px;"/>
-    <canvas id="fireworks-canvas"
-            style="position:absolute;top:0;left:0;width:100vw;height:100vh;pointer-events:none;"></canvas>
-</div>
-
-
-<div id="card-modal"
-     style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:10000; justify-content:center; align-items:center; flex-direction:column;">
-    <img id="modal-card-img" src="" alt="Collected Card"
-         style="max-width:80vw; max-height:80vh; border-radius:16px; box-shadow:0 2px 16px rgba(0,0,0,0.4);"/>
-    <button id="close-modal-btn"
-            style="margin-top:24px; font-size:18px; background:rgba(252,237,195,0.95); color:#382110; border:none; border-radius:10px; padding:12px 32px; font-weight:bold; box-shadow:0 2px 12px rgba(0,0,0,0.2); cursor:pointer;">
-        Close
-    </button>
-</div>
-
-<script type="module" src="src/game.js"></script>
+    <!-- Email Modal -->
+    <div id="email-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <button class="close-modal" id="close-modal" aria-label="Close">&times;</button>
+            <div id="modal-login" class="modal-form">
+                <h2 class="modal-title">Login with Email</h2>
+                <input type="email" id="login-email" class="modal-input" placeholder="Email" autocomplete="email" required>
+                <input type="password" id="login-password" class="modal-input" placeholder="Password" autocomplete="current-password" required>
+                <button class="login-btn email-login" id="submit-login">Login</button>
+                <p class="modal-switch">Don't have an account? <a href="#" id="switch-to-register">Register</a></p>
+            </div>
+            <div id="modal-register" class="modal-form" style="display:none;">
+                <h2 class="modal-title">Register with Email</h2>
+                <input type="email" id="register-email" class="modal-input" placeholder="Email" autocomplete="email" required>
+                <input type="password" id="register-password" class="modal-input" placeholder="Password" autocomplete="new-password" required>
+                <input type="password" id="register-confirm" class="modal-input" placeholder="Confirm Password" autocomplete="new-password" required>
+                <button class="login-btn email-register" id="submit-register">Register</button>
+                <p class="modal-switch">Already have an account? <a href="#" id="switch-to-login">Login</a></p>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="src/home.js"></script>
 </body>
 </html>
