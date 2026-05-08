@@ -1,15 +1,17 @@
 import {startFireworks, stopFireworks} from "./game-over.js";
 import {showMessage} from "./ui.js";
 
+const BASE = import.meta.env.BASE_URL;
+
 const allCards = [
-    "dinosaur-cards/ankylosaurus.png",
-    "dinosaur-cards/argentinosaurus.png",
-    "dinosaur-cards/brachiosaurus.png",
-    "dinosaur-cards/parasaurolophus.png",
-    "dinosaur-cards/patagotitan.png",
-    "dinosaur-cards/t-rex.png",
-    "dinosaur-cards/therizinosaurus.png",
-    "dinosaur-cards/triceratops.png"
+    `${BASE}dinosaur-cards/ankylosaurus.png`,
+    `${BASE}dinosaur-cards/argentinosaurus.png`,
+    `${BASE}dinosaur-cards/brachiosaurus.png`,
+    `${BASE}dinosaur-cards/parasaurolophus.png`,
+    `${BASE}dinosaur-cards/patagotitan.png`,
+    `${BASE}dinosaur-cards/t-rex.png`,
+    `${BASE}dinosaur-cards/therizinosaurus.png`,
+    `${BASE}dinosaur-cards/triceratops.png`
 ];
 
 // Internal state
@@ -55,47 +57,39 @@ export function showCard() {
     const img = celebration.querySelector("img");
     if (img && currentCard) {
         img.src = currentCard;
-        img.style.transform = ""; // Reset
-        img.style.transition = "transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1)";
+        img.style.transition = "";
+        img.style.transform = "";
+        img.style.opacity = "1";
     }
 
     celebration.style.display = "flex";
     startFireworks();
 
+    // After 2s show: shrink & fade the card out, then collect it
     setTimeout(() => {
-        // Get bounding rects
-        const collected = document.getElementById("collected-cards");
-        const collectedRect = collected.getBoundingClientRect();
-        const imgRect = img.getBoundingClientRect();
-
-        // Calculate translation
-        const scale = 0.3;
-        const targetX = collectedRect.left + collectedRect.width / 2 - (imgRect.left + imgRect.width / 2);
-        const targetY = collectedRect.top + collectedRect.height / 2 - (imgRect.top + imgRect.height / 2);
-
-        img.style.transform = `translate(${targetX}px, ${targetY}px) scale(${scale})`;
-
-        img.addEventListener("transitionend", () => {
+        if (img) {
+            img.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+            img.style.opacity = "0";
+            img.style.transform = "scale(0.25)";
+        }
+        setTimeout(() => {
             addCollectedCard(currentCard);
             hideCard();
-            img.style.transform = ""; // Reset for next time
-        }, { once: true });
+            // Reset for next use
+            if (img) {
+                img.style.transition = "";
+                img.style.opacity = "1";
+                img.style.transform = "";
+            }
+        }, 650);
     }, 2000);
 }
-
 
 export function hideCard() {
     const celebration = document.getElementById("t-rex-celebration");
     if (!celebration) return;
     stopFireworks();
-
-    const img = celebration.querySelector("img");
-    if (img) {
-        img.src = "t-rex.png"; // revert back when closing
-    }
-
     celebration.style.display = "none";
-
 }
 
 export function addCollectedCard(cardImageUrl) {

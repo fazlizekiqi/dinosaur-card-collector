@@ -1,6 +1,6 @@
 import maplibregl from 'maplibre-gl';
 
-const TREASURE_ICON = "treasure.png";
+const TREASURE_ICON = `${import.meta.env.BASE_URL}treasure.png`;
 let treasureMarker;
 
 

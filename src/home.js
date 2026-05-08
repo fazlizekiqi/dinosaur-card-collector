@@ -2,6 +2,33 @@ import { loginWithGoogle, register, continueAsGuest, loginWithEmail } from './au
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import {initGame} from "./game.js";
 
+// --- Home settings modal ---
+const homeSettingsBtn = document.getElementById('home-settings-btn');
+const homeSettingsModal = document.getElementById('home-settings-modal');
+const closeHomeSettings = document.getElementById('close-home-settings');
+const radiusHint = document.getElementById('radius-hint');
+
+
+function setRadius(value) {
+    localStorage.setItem('eggRadius', String(value));
+    document.querySelectorAll('.radius-opt').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.value === String(value));
+    });
+    if (radiusHint) radiusHint.textContent = `Egg will be hidden ~${value} m from you.`;
+}
+
+// Restore saved radius on load
+const savedRadius = parseInt(localStorage.getItem('eggRadius') || '150', 10);
+setRadius(savedRadius);
+
+document.querySelectorAll('.radius-opt').forEach(btn => {
+    btn.addEventListener('click', () => setRadius(parseInt(btn.dataset.value, 10)));
+});
+
+homeSettingsBtn.addEventListener('click', () => { homeSettingsModal.style.display = 'flex'; });
+closeHomeSettings.addEventListener('click', () => { homeSettingsModal.style.display = 'none'; });
+homeSettingsModal.addEventListener('click', (e) => { if (e.target === homeSettingsModal) homeSettingsModal.style.display = 'none'; });
+
 const googleBtn = document.getElementById('google-login');
 const guestBtn = document.getElementById('guest-login');
 

@@ -1,19 +1,20 @@
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl from 'maplibre-gl';
 import { showMessage, hideMessage } from './ui.js';
-import { showCard, hideCard, getNextCard, initializeCards } from './showCard.js';
+import { showCard, getNextCard, initializeCards } from './showCard.js';
 import { addTreasureMarker } from './treasureMarker.js';
-import {updatePirateMarker, injectPirateCSS, updateArrow} from './pirateMarker.js';
-import { distanceMeters, randomPointNear } from './utils.js';
+import {updatePirateMarker, injectPirateCSS, updateArrow, resetPirateMarker} from './pirateMarker.js';
+import { distanceMeters, randomPointNear, getBearingBetween } from './utils.js';
 import { getAuth, signOut } from 'firebase/auth';
 
 
 
 export function initGame(){
+    resetPirateMarker();
 
+    // Read user-configured radius from settings on home screen (default 150m)
+    const TREASURE_DISTANCE_RADIUS = parseInt(localStorage.getItem('eggRadius') || '150', 10);
 
-
-// <!-- Place this just before the closing </body> tag -->
     const fullscreenBtn = document.getElementById('fullscreen-btn');
     const dinoModal = document.getElementById('dino-collector-modal');
     const closeDinoModalBtn = document.getElementById('close-dino-modal-btn');
@@ -25,6 +26,47 @@ export function initGame(){
     closeDinoModalBtn.addEventListener('click', () => {
         dinoModal.classList.remove('show');
     });
+
+
+    // --- Profile modal ---
+    const profileBtn = document.getElementById('profile-btn');
+    const profileModal = document.getElementById('profile-modal');
+    const closeProfileBtn = document.getElementById('close-profile-btn');
+
+    function openProfileModal() {
+        // Render collected cards
+        const grid = document.getElementById('profile-cards-grid');
+        const emptyMsg = document.getElementById('profile-empty-msg');
+        const hiddenCards = document.getElementById('collected-cards');
+        const imgs = hiddenCards ? hiddenCards.querySelectorAll('img') : [];
+        grid.innerHTML = '';
+        if (imgs.length === 0) {
+            emptyMsg.style.display = 'block';
+        } else {
+            emptyMsg.style.display = 'none';
+            imgs.forEach(img => {
+                const clone = document.createElement('img');
+                clone.src = img.src;
+                clone.alt = img.alt;
+                clone.className = 'profile-card-thumb';
+                clone.addEventListener('click', () => {
+                    const cardModal = document.getElementById('card-modal');
+                    document.getElementById('modal-card-img').src = clone.src;
+                    cardModal.classList.add('show');
+                    profileModal.classList.remove('show');
+                });
+                grid.appendChild(clone);
+            });
+        }
+        // Update stats
+        document.getElementById('profile-stats').textContent = `${imgs.length} / 8 cards collected`;
+        profileModal.classList.add('show');
+    }
+
+    profileBtn.addEventListener('click', openProfileModal);
+    closeProfileBtn.addEventListener('click', () => profileModal.classList.remove('show'));
+    profileModal.addEventListener('click', (e) => { if (e.target === profileModal) profileModal.classList.remove('show'); });
+
     let lastTouchEnd = 0;
 
     document.addEventListener('touchend', (event) => {
@@ -39,6 +81,7 @@ export function initGame(){
     const DEFAULT_ZOOM = 15;
 
     let map;
+    let mapLoaded = false;          // true only after map 'load' fires
     let userCoords;
     let treasureCoords;
 
@@ -48,44 +91,36 @@ export function initGame(){
     if (marker) marker.style.display = 'none';
 
 
+    function getHotColdMessage(dist) {
+        if (dist > 200) return '❄️ Freezing cold… keep walking!';
+        if (dist > 100) return '🌬️ Still cold… getting closer…';
+        if (dist > 50)  return '☀️ Warm! You\'re getting there!';
+        if (dist > 20)  return '🔥 Hot! Almost there!';
+        return '🌋 BURNING!! The egg is right here!!!';
+    }
 
     function checkWinCondition() {
         if (!userCoords || !treasureCoords || win) return;
         const dist = distanceMeters(userCoords, treasureCoords);
-        if (dist <= 30) {
-            showMessage("🏴☠️ You are very close. Don't give up");
-        }
+
+        showMessage(getHotColdMessage(dist));
+
         if (dist <= 15) {
             win = true;
-            showMessage("You found it. Great job.");
-            const card = getNextCard();
-            // addCollectedCard(card);
-// Add this after your addCollectedCard function
-
-
+            clearRoute();                   // hide old path during celebration
+            showMessage('🥚 You found the egg! Amazing!');
+            getNextCard();
             showCard();
-            generateRandomTreasure()
-            setTimeout(()=> {
+            generateRandomTreasure();       // place new egg + draw new path immediately
+            setTimeout(() => {
                 win = false;
-                hideCard()
-                showMessage("Let's go for the next one. ");
-
-            }, 5000)
+                showMessage('🦕 Let\'s find the next egg!');
+            }, 5000);
         }
     }
 
 
-// Click to show selected cards
-    document.getElementById("collected-cards").addEventListener("click", function(e) {
-        if (e.target.tagName === "IMG") {
-
-            const modal = document.getElementById("card-modal");
-            const modalImg = document.getElementById("modal-card-img");
-            modalImg.src = e.target.src;
-            modal.classList.add("show");
-        }
-    });
-
+    // Card zoom modal close button
     document.getElementById("close-modal-btn").addEventListener("click", function() {
         document.getElementById("card-modal").classList.remove("show");
     });
@@ -103,7 +138,14 @@ export function initGame(){
         if (heading !== undefined && heading !== null) {
             if (heading < 0) heading += 360;
             currentHeading = heading;
-            updateArrow(currentHeading);
+            // Compute direction to treasure relative to device facing direction
+            if (userCoords && treasureCoords) {
+                const bearing = getBearingBetween(userCoords, treasureCoords);
+                const relativeAngle = (bearing - heading + 360) % 360;
+                updateArrow(relativeAngle);
+            } else {
+                updateArrow(0);
+            }
         }
     }
 
@@ -155,26 +197,25 @@ export function initGame(){
         return data.features[0].geometry;
     }
 
-    function drawRoute(userCoords, treasureCoords) {
-        // Remove existing path if present
-        if (map.getSource('user-to-treasure')) {
-            if (map.getLayer('user-to-treasure-line')) {
-                map.removeLayer('user-to-treasure-line');
-            }
-            map.removeSource('user-to-treasure');
-        }
-        fetchRoute(userCoords, treasureCoords).then(geometry => {
-            map.addSource('user-to-treasure', {
+    // ── Route drawing — single stable source, updated with setData ──
+    const ROUTE_SOURCE = 'route';
+    const ROUTE_LAYER  = 'route-line';
+    let routeFetchController = null;
+    let fetchedRouteCoords   = null;   // the road-following coords from the last successful fetch
+    let routeFetchedFromCoords = null; // the userCoords at the time of the last fetch
+
+    const REFETCH_DISTANCE_M = 40;     // re-fetch the walking route after moving this far
+
+    function ensureRouteLayer() {
+        if (!map.getSource(ROUTE_SOURCE)) {
+            map.addSource(ROUTE_SOURCE, {
                 type: 'geojson',
-                data: {
-                    type: 'Feature',
-                    geometry: geometry
-                }
+                data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } }
             });
             map.addLayer({
-                id: 'user-to-treasure-line',
+                id: ROUTE_LAYER,
                 type: 'line',
-                source: 'user-to-treasure',
+                source: ROUTE_SOURCE,
                 layout: {},
                 paint: {
                     'line-color': '#FFD700',
@@ -182,41 +223,75 @@ export function initGame(){
                     'line-dasharray': [2, 2]
                 }
             });
-        }).catch(() => {
-            if (userCoords && treasureCoords) {
+        }
+    }
 
-                map.addSource('user-to-treasure', {
-                    type: 'geojson',
-                    data: {
-                        type: 'Feature',
-                        geometry: {
-                            type: 'LineString',
-                            coordinates: [
-                                [userCoords[1], userCoords[0]],
-                                [treasureCoords[1], treasureCoords[0]]
-                            ]
-                        }
-                    }
-                });
-                map.addLayer({
-                    id: 'user-to-treasure-line',
-                    type: 'line',
-                    source: 'user-to-treasure',
-                    layout: {},
-                    paint: {
-                        'line-color': '#FFD700',
-                        'line-width': 4,
-                        'line-dasharray': [2, 2]
-                    }
-                });
-            }
+    function setRouteCoords(coordinates) {
+        ensureRouteLayer();
+        map.getSource(ROUTE_SOURCE).setData({
+            type: 'Feature',
+            geometry: { type: 'LineString', coordinates }
         });
     }
 
+    function clearRoute() {
+        if (routeFetchController) { routeFetchController.abort(); routeFetchController = null; }
+        fetchedRouteCoords = null;
+        routeFetchedFromCoords = null;
+        if (map && map.getSource(ROUTE_SOURCE)) {
+            map.getSource(ROUTE_SOURCE).setData(
+                { type: 'Feature', geometry: { type: 'LineString', coordinates: [] } }
+            );
+        }
+    }
+
+    function drawRoute(from, to) {
+        // Cancel any previous in-flight fetch
+        if (routeFetchController) { routeFetchController.abort(); }
+        routeFetchController = new AbortController();
+        const { signal } = routeFetchController;
+
+        // Show a straight line immediately while we wait for the walking route
+        setRouteCoords([[from[1], from[0]], [to[1], to[0]]]);
+        fetchedRouteCoords = null;
+
+        fetchRoute(from, to)
+            .then(geometry => {
+                if (signal.aborted) return;
+                fetchedRouteCoords = geometry.coordinates;
+                routeFetchedFromCoords = from;
+                setRouteCoords(fetchedRouteCoords);
+            })
+            .catch(() => {
+                // Keep the straight line — no walking route available
+            });
+    }
+
+    // Called on every GPS tick — updates the user's end of the existing road route
+    // without throwing away the road-following geometry.
+    function updateRouteStart(from) {
+        if (!treasureCoords) return;
+
+        // If we moved far enough from where the route was fetched, re-fetch
+        if (
+            !fetchedRouteCoords ||
+            !routeFetchedFromCoords ||
+            distanceMeters(from, routeFetchedFromCoords) > REFETCH_DISTANCE_M
+        ) {
+            drawRoute(from, treasureCoords);
+            return;
+        }
+
+        // Splice the user's current position as the new first point of the road route,
+        // keeping all the road-following waypoints intact
+        const updated = [[from[1], from[0]], ...fetchedRouteCoords.slice(1)];
+        setRouteCoords(updated);
+    }
+
     function generateRandomTreasure() {
-        const TREASURE_DISTANCE_RADIUS = 150;
         treasureCoords = randomPointNear(userCoords, TREASURE_DISTANCE_RADIUS);
         addTreasureMarker(treasureCoords, map);
+        drawRoute(userCoords, treasureCoords);
     }
 
 // --- Main Game Flow ---
@@ -234,10 +309,11 @@ export function initGame(){
             });
 
             map.on('load', () => {
+                mapLoaded = true;
                 injectPirateCSS();
-                updatePirateMarker(userCoords, map);
                 generateRandomTreasure();
-                enablePirateMovement(userCoords, map); // Remove before push
+                updatePirateMarker(userCoords, map);
+                enablePirateMovement(map);
                 const cloudOverlay = document.getElementById('cloud-overlay');
                 const clouds = [
                     document.querySelector('.cloud1'),
@@ -315,9 +391,9 @@ export function initGame(){
                 map.on('dragrotate', onMapRotate);
             });
         } else {
+            if (!mapLoaded) return;   // map exists but style not ready yet — load callback handles first render
             updatePirateMarker(userCoords, map);
-            // updateArrow(currentHeading);
-            drawRoute(userCoords, treasureCoords);
+            updateRouteStart(userCoords);
         }
         checkWinCondition();
     }
@@ -339,38 +415,27 @@ export function initGame(){
         });
         navigator.geolocation.watchPosition(pos => {
             onPosition(pos);
-            checkWinCondition();
         }, onError, {enableHighAccuracy: true, maximumAge: 2000, timeout: 7000});
     }
 
 
-    window.devMode = false;  // Enable arrow-key movement
+    window.devMode = false;
     const moveStep = 0.00025;
-    function enablePirateMovement(currentCoords, map) {
+    function enablePirateMovement(map) {
         document.addEventListener('keydown', (event) => {
-            let [lat, lng] = currentCoords;
-            if (!window.devMode) return;
+            if (!window.devMode || !mapLoaded) return;
+            let [lat, lng] = userCoords;
             switch (event.key) {
-                case 'ArrowUp':
-                    lat += moveStep;
-                    break;
-                case 'ArrowDown':
-                    lat -= moveStep;
-                    break;
-                case 'ArrowLeft':
-                    lng -= moveStep;
-                    break;
-                case 'ArrowRight':
-                    lng += moveStep;
-                    break;
-                default:
-                    return; // ignore other keys
+                case 'ArrowUp':    lat += moveStep; break;
+                case 'ArrowDown':  lat -= moveStep; break;
+                case 'ArrowLeft':  lng -= moveStep; break;
+                case 'ArrowRight': lng += moveStep; break;
+                default: return;
             }
-
-            currentCoords = [lat, lng];
-            userCoords = currentCoords;
-            updatePirateMarker(currentCoords, map);
-            checkWinCondition()
+            userCoords = [lat, lng];
+            updatePirateMarker(userCoords, map);
+            updateRouteStart(userCoords);
+            checkWinCondition();
         });
     }
 
@@ -385,20 +450,17 @@ export function initGame(){
 
     function showUserInfo() {
         const user = getAuth().currentUser;
-        const nameSpan = document.getElementById('user-name');
-        const avatarImg = document.getElementById('user-avatar');
+        const nameEl = document.getElementById('profile-username');
+        const avatarEl = document.getElementById('profile-avatar');
         if (user) {
-            let name = user.displayName || user.email || 'Guest';
-            nameSpan.textContent = name;
-            if (user.photoURL) {
-                avatarImg.src = user.photoURL;
-                avatarImg.style.display = 'inline-block';
-            } else {
-                avatarImg.style.display = 'none';
+            const name = user.displayName || user.email || 'Guest Explorer';
+            if (nameEl) nameEl.textContent = name;
+            if (avatarEl && user.photoURL) {
+                avatarEl.src = user.photoURL;
+                avatarEl.style.display = 'inline-block';
             }
         } else {
-            nameSpan.textContent = 'Guest';
-            avatarImg.style.display = 'none';
+            if (nameEl) nameEl.textContent = 'Guest Explorer';
         }
     }
 

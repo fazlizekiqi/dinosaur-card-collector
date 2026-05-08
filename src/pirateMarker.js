@@ -1,10 +1,22 @@
 // --- Pirate Marker with Arrow ---
 import maplibregl from 'maplibre-gl';
-import {getBearingBetween} from "./utils.js";
 
-const PIRATE_ICON = "palentologist.png";
+const PIRATE_ICON = `${import.meta.env.BASE_URL}palentologist.png`;
+
+// Preload the image so it's always in the browser cache
+const _preload = new Image();
+_preload.src = PIRATE_ICON;
+
 let userMarker = null;
 let pirateIconEl = null;
+
+export function resetPirateMarker() {
+    if (userMarker) {
+        try { userMarker.remove(); } catch (_) {}
+    }
+    userMarker = null;
+    pirateIconEl = null;
+}
 
 const foundCards = [];
 
@@ -109,14 +121,14 @@ export function updatePirateMarker(coords, map) {
 }
 
 
-export function updateArrow(currentHeading) {
-    if (currentHeading === null) return;
+export function updateArrow(angleToTreasure) {
+    if (angleToTreasure === null || angleToTreasure === undefined) return;
 
     if (pirateIconEl) {
         const arrow = pirateIconEl.querySelector('#arrow');
         if (arrow) {
-            // Rotate arrow to match device heading, move out from center
-            arrow.style.transform = `rotate(${currentHeading}deg) translateY(-48px)`;
+            // Rotate arrow to point toward the treasure relative to device orientation
+            arrow.style.transform = `rotate(${angleToTreasure}deg)`;
         }
     }
 }

@@ -12,12 +12,19 @@
 </head>
 <body>
     <div class="background"></div>
+
+    <!-- Settings button — top-right corner of home screen -->
+    <button id="home-settings-btn" class="home-settings-btn" title="Settings" aria-label="Open Settings">
+        ⚙️
+    </button>
+
     <div class="home-container">
         <div class="logo-section">
             <img src="public/happy-dino-collector.png" alt="Dinosaur Collector Logo" class="game-logo" />
             <h1 class="game-title">Dinosaur Card Collector</h1>
             <p class="subtitle">Collect, trade, and discover dinosaurs! Choose how you want to start:</p>
         </div>
+
         <div class="login-card">
             <button class="login-btn google" id="google-login" aria-label="Sign in with Google">
                 <img src="public/00-removebg-preview.png" alt="Google" class="btn-icon">
@@ -60,6 +67,60 @@
             </div>
         </div>
     </div>
+    <!-- Home Settings Modal -->
+    <div id="home-settings-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-card home-settings-modal-card">
+            <button class="close-modal" id="close-home-settings" aria-label="Close">&times;</button>
+            <h2 class="modal-title">⚙️ Settings</h2>
+            <div class="home-settings-body">
+                <label class="home-settings-label">🥚 Egg distance</label>
+                <div class="radius-options" id="radius-options">
+                    <button class="radius-opt" data-value="20">
+                        <span class="radius-icon">🎯</span>
+                        <span class="radius-name">Extreme</span>
+                        <span class="radius-dist">20 m</span>
+                    </button>
+                    <button class="radius-opt" data-value="50">
+                        <span class="radius-icon">🏃</span>
+                        <span class="radius-name">Short</span>
+                        <span class="radius-dist">50 m</span>
+                    </button>
+                    <button class="radius-opt" data-value="100">
+                        <span class="radius-icon">🚶</span>
+                        <span class="radius-name">Medium</span>
+                        <span class="radius-dist">100 m</span>
+                    </button>
+                    <button class="radius-opt selected" data-value="150">
+                        <span class="radius-icon">🗺️</span>
+                        <span class="radius-name">Normal</span>
+                        <span class="radius-dist">150 m</span>
+                    </button>
+                    <button class="radius-opt" data-value="300">
+                        <span class="radius-icon">🌲</span>
+                        <span class="radius-name">Far</span>
+                        <span class="radius-dist">300 m</span>
+                    </button>
+                    <button class="radius-opt" data-value="500">
+                        <span class="radius-icon">🏔️</span>
+                        <span class="radius-name">Epic</span>
+                        <span class="radius-dist">500 m</span>
+                    </button>
+                </div>
+                <p class="settings-hint" id="radius-hint">Egg will be hidden ~150 m from you.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        navigator.geolocation.getCurrentPosition = (success) => {
+            success({
+                coords: {
+                    latitude: 40.7128,
+                    longitude: -74.0060
+                }
+            });
+        };
+    </script>
     <script type="module" src="src/game.js"></script>
     <script type="module" src="src/home.js"></script>
 </body>
