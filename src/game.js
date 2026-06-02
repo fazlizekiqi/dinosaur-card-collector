@@ -3,7 +3,7 @@ import maplibregl from 'maplibre-gl';
 import { showMessage, hideMessage } from './ui.js';
 import { showCard, getNextCard, initializeCards } from './showCard.js';
 import { addTreasureMarker } from './treasureMarker.js';
-import {updatePirateMarker, injectPirateCSS, updateArrow, resetPirateMarker} from './pirateMarker.js';
+import {updatePirateMarker, injectPirateCSS, resetPirateMarker} from './pirateMarker.js';
 import { distanceMeters, randomPointNear } from './utils.js';
 import { getAuth, signOut } from 'firebase/auth';
 
@@ -42,23 +42,30 @@ export function initGame(){
         dinoModal.classList.add('show');
     });
 
-    // "Let's go!" button — used on iOS to bundle both permission prompts in one gesture
+    // "Let's go!" button — on iOS bundles both permission prompts in one gesture
     closeDinoModalBtn.addEventListener('click', () => {
         dinoModal.classList.remove('show');
-        requestOrientationPermission();
-        startTracking();
+        dinoModal.style.display = 'none';
+        if (needsGestureForPermission) {
+            requestOrientationPermission();
+            startTracking();
+        }
     });
 
     // On non-iOS devices there is no orientation permission prompt,
-    // so start tracking immediately without waiting for the button
+    // so start tracking immediately without waiting for the button.
+    // On iOS (needsGestureForPermission=true) show the dino modal so the
+    // user taps "Let's go!" — that single gesture covers both permissions.
     const needsGestureForPermission =
         typeof DeviceOrientationEvent !== 'undefined' &&
         typeof DeviceOrientationEvent.requestPermission === 'function';
 
     if (!needsGestureForPermission) {
-        // Desktop / Android — start right away, register orientation listener too
         requestOrientationPermission();
         startTracking();
+    } else {
+        // Show the dino modal immediately so the user can tap "Let's go!"
+        dinoModal.style.display = 'flex';
     }
 
 
