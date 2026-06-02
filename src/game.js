@@ -3,7 +3,7 @@ import maplibregl from 'maplibre-gl';
 import { showMessage, hideMessage } from './ui.js';
 import { showCard, getNextCard, initializeCards } from './showCard.js';
 import { addTreasureMarker } from './treasureMarker.js';
-import {updatePirateMarker, injectPirateCSS, resetPirateMarker} from './pirateMarker.js';
+import {updatePirateMarker, injectPirateCSS, resetPirateMarker, updateDirectionFromHeading} from './pirateMarker.js';
 import { distanceMeters, randomPointNear } from './utils.js';
 import { getAuth, signOut } from 'firebase/auth';
 
@@ -181,6 +181,7 @@ export function initGame(){
         }
         if (heading === undefined || heading === null) return;
         currentHeading = heading;
+        updateDirectionFromHeading(heading);
         applyHeadingToMap(heading);
     }
 
@@ -464,6 +465,7 @@ export function initGame(){
             valEl.textContent = angle;
             slider.value = angle;
             currentHeading = angle;
+            updateDirectionFromHeading(angle);
             applyHeadingToMap(angle);
         }
 

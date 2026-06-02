@@ -1,47 +1,62 @@
-// --- Pirate Marker with Arrow ---
+// --- Pirate Marker with directional sprites ---
 import maplibregl from 'maplibre-gl';
 
-const PIRATE_ICON = `${import.meta.env.BASE_URL}palentologist.png`;
+const BASE = import.meta.env.BASE_URL;
 
-// Preload the image so it's always in the browser cache
-const _preload = new Image();
-_preload.src = PIRATE_ICON;
+const DIRECTION_ICONS = {
+    north: `${BASE}north.png`,
+    east:  `${BASE}east.png`,
+    south: `${BASE}south.png`,
+    west:  `${BASE}west.png`,
+};
+
+// Preload all 4
+Object.values(DIRECTION_ICONS).forEach(src => { const i = new Image(); i.src = src; });
 
 let userMarker = null;
 let pirateIconEl = null;
+let pirateImg = null;
+let currentDirection = 'south'; // default facing down
 
 export function resetPirateMarker() {
-    if (userMarker) {
-        try { userMarker.remove(); } catch (_) {}
-    }
+    if (userMarker) { try { userMarker.remove(); } catch (_) {} }
     userMarker = null;
     pirateIconEl = null;
+    pirateImg = null;
 }
 
 const foundCards = [];
+export function addCardToUser(card) { foundCards.push(card); }
 
-export function addCardToUser(card){
-    foundCards.push(card);
+function headingToDirection(heading) {
+    // heading: 0/360=N, 90=E, 180=S, 270=W
+    if (heading >= 315 || heading < 45)  return 'north';
+    if (heading >= 45  && heading < 135) return 'east';
+    if (heading >= 135 && heading < 225) return 'south';
+    return 'west';
+}
+
+export function updateDirectionFromHeading(heading) {
+    if (heading === null || heading === undefined) return;
+    const dir = headingToDirection(heading);
+    if (dir === currentDirection || !pirateImg) return;
+    currentDirection = dir;
+    const src = DIRECTION_ICONS[dir] + '?v=' + Date.now();
+    pirateImg.src = src;
+    pirateImg.onerror = () => { pirateImg.onerror = null; pirateImg.src = DIRECTION_ICONS[dir]; };
 }
 
 export function createAnimatedPirateIcon() {
     const el = document.createElement('div');
     el.className = 'pirate-marker';
-    el.style.cssText = 'position:relative;width:64px;height:64px;display:block;';
+    el.style.cssText = 'position:relative;width:80px;height:80px;display:flex;align-items:center;justify-content:center;';
 
-    const pirateImg = document.createElement('img');
-    pirateImg.alt = "Player";
-    pirateImg.style.cssText = 'width:64px;height:64px;position:absolute;left:0;top:0;z-index:1;display:block;';
-    pirateImg.className = "bobbing-img";
-
-    // Force a fresh load every time by busting the cache with a timestamp
-    pirateImg.src = PIRATE_ICON + '?v=' + Date.now();
-
-    pirateImg.onerror = () => {
-        // Retry once without cache-bust in case the ?v= breaks a strict server
-        pirateImg.onerror = null;
-        pirateImg.src = PIRATE_ICON;
-    };
+    pirateImg = document.createElement('img');
+    pirateImg.alt = 'Player';
+    pirateImg.style.cssText = 'max-width:80px;max-height:80px;width:auto;height:auto;display:block;object-fit:contain;';
+    pirateImg.className = 'bobbing-img';
+    pirateImg.src = DIRECTION_ICONS[currentDirection] + '?v=' + Date.now();
+    pirateImg.onerror = () => { pirateImg.onerror = null; pirateImg.src = DIRECTION_ICONS[currentDirection]; };
 
     el.appendChild(pirateImg);
     return el;
