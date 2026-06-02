@@ -112,20 +112,17 @@
     </div>
 
     <script>
-        navigator.geolocation.getCurrentPosition = (success) => {
-            success({
-                coords: {
-                    latitude: 40.7128,
-                    longitude: -74.0060
-                }
-            });
-        };
+        // navigator.geolocation.getCurrentPosition = (success) => {
+        //     success({
+        //         coords: {
+        //             latitude: 40.7128,
+        //             longitude: -74.0060
+        //         }
+        //     });
+        // };
     </script>
 
-    <!-- ============================================================
-         DEV ONLY — arrow panel is injected by game.js (setupDevArrowPanel)
-         Remove the setupDevArrowPanel block in src/game.js before production
-         ============================================================ -->
+
     <script type="module" src="src/game.js"></script>
     <script type="module" src="src/home.js"></script>
 </body>
