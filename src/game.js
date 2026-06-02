@@ -127,6 +127,37 @@ export function initGame(){
 
     let arrowFollowsDevice = true;
 
+    function refreshArrow() {
+        if (!userCoords || !treasureCoords) return;
+
+        let targetCoords; // [lat, lng] of where the arrow should point toward
+
+        if (fetchedRouteCoords && fetchedRouteCoords.length > 1) {
+            // fetchedRouteCoords is [[lng,lat], [lng,lat], ...]
+            // Find the closest point index on the route to the user
+            let closestIdx = 0;
+            let closestDist = Infinity;
+            for (let i = 0; i < fetchedRouteCoords.length; i++) {
+                const d = distanceMeters(userCoords, [fetchedRouteCoords[i][1], fetchedRouteCoords[i][0]]);
+                if (d < closestDist) { closestDist = d; closestIdx = i; }
+            }
+            // Look ahead ~3 waypoints along the route from the closest point
+            const lookahead = Math.min(closestIdx + 3, fetchedRouteCoords.length - 1);
+            const wp = fetchedRouteCoords[lookahead];
+            targetCoords = [wp[1], wp[0]]; // convert [lng,lat] → [lat,lng]
+        } else {
+            // No route yet — fall back to straight line toward egg
+            targetCoords = treasureCoords;
+        }
+
+        const bearing = getBearingBetween(userCoords, targetCoords);
+        if (currentHeading !== null && arrowFollowsDevice) {
+            updateArrow((bearing - currentHeading + 360) % 360);
+        } else {
+            updateArrow(bearing);
+        }
+    }
+
     function handleOrientation(event) {
         if (!arrowFollowsDevice) return;
         let heading;
@@ -138,14 +169,7 @@ export function initGame(){
         if (heading !== undefined && heading !== null) {
             if (heading < 0) heading += 360;
             currentHeading = heading;
-            // Compute direction to treasure relative to device facing direction
-            if (userCoords && treasureCoords) {
-                const bearing = getBearingBetween(userCoords, treasureCoords);
-                const relativeAngle = (bearing - heading + 360) % 360;
-                updateArrow(relativeAngle);
-            } else {
-                updateArrow(0);
-            }
+            refreshArrow();
         }
     }
 
@@ -286,12 +310,14 @@ export function initGame(){
         // keeping all the road-following waypoints intact
         const updated = [[from[1], from[0]], ...fetchedRouteCoords.slice(1)];
         setRouteCoords(updated);
+        refreshArrow();
     }
 
     function generateRandomTreasure() {
         treasureCoords = randomPointNear(userCoords, TREASURE_DISTANCE_RADIUS);
         addTreasureMarker(treasureCoords, map);
         drawRoute(userCoords, treasureCoords);
+        refreshArrow();
     }
 
 // --- Main Game Flow ---
@@ -391,9 +417,10 @@ export function initGame(){
                 map.on('dragrotate', onMapRotate);
             });
         } else {
-            if (!mapLoaded) return;   // map exists but style not ready yet — load callback handles first render
+            if (!mapLoaded) return;
             updatePirateMarker(userCoords, map);
             updateRouteStart(userCoords);
+            refreshArrow();
         }
         checkWinCondition();
     }
@@ -419,7 +446,65 @@ export function initGame(){
     }
 
 
+    // ============================================================
+    // DEV ONLY — remove this block before deploying to production
+    // ============================================================
+    (function setupDevArrowPanel() {
+        if (document.getElementById('dev-orient-panel')) return;
+        const wrap = document.createElement('div');
+        wrap.id = 'dev-orient-panel';
+        wrap.style.cssText = `
+            display:none;position:fixed;bottom:110px;left:50%;transform:translateX(-50%);
+            background:rgba(0,0,0,0.85);color:white;padding:12px 18px;
+            border-radius:14px;z-index:99999;flex-direction:column;
+            align-items:center;gap:8px;font-size:13px;font-family:sans-serif;
+            box-shadow:0 4px 18px rgba(0,0,0,0.6);pointer-events:all;min-width:260px;
+        `;
+        wrap.innerHTML = `
+            <span style="font-size:14px;font-weight:bold;">🧭 Arrow tester — <span id="dev-orient-val">0</span>°</span>
+            <input id="dev-orient-slider" type="range" min="0" max="359" value="0"
+                   style="width:230px;accent-color:#FFD700;cursor:pointer;">
+            <div style="display:flex;gap:8px;">
+                <button data-a="0"   style="padding:6px 12px;border-radius:8px;border:none;cursor:pointer;background:#555;color:white;font-size:13px;">↑ N</button>
+                <button data-a="90"  style="padding:6px 12px;border-radius:8px;border:none;cursor:pointer;background:#555;color:white;font-size:13px;">→ E</button>
+                <button data-a="180" style="padding:6px 12px;border-radius:8px;border:none;cursor:pointer;background:#555;color:white;font-size:13px;">↓ S</button>
+                <button data-a="270" style="padding:6px 12px;border-radius:8px;border:none;cursor:pointer;background:#555;color:white;font-size:13px;">← W</button>
+            </div>
+        `;
+        document.body.appendChild(wrap);
+
+        const slider = document.getElementById('dev-orient-slider');
+        const valEl  = document.getElementById('dev-orient-val');
+
+        function fire(angle) {
+            angle = ((angle % 360) + 360) % 360;
+            valEl.textContent = angle;
+            slider.value = angle;
+            updateArrow(angle);
+        }
+
+        slider.addEventListener('input', () => fire(Number(slider.value)));
+        wrap.querySelectorAll('button[data-a]').forEach(btn =>
+            btn.addEventListener('click', () => fire(Number(btn.dataset.a)))
+        );
+
+        // React to devMode toggling — same pattern as keyboard movement
+        Object.defineProperty(window, 'devMode', {
+            get() { return this._devMode ?? false; },
+            set(v) {
+                this._devMode = v;
+                wrap.style.display = v ? 'flex' : 'none';
+                if (v) fire(Number(slider.value)); // show arrow immediately
+            },
+            configurable: true
+        });
+    })();
+    // ============================================================
+    // END DEV ONLY
+    // ============================================================
+
     window.devMode = false;
+    window.testArrow = (angle) => updateArrow(angle);
     const moveStep = 0.00025;
     function enablePirateMovement(map) {
         document.addEventListener('keydown', (event) => {

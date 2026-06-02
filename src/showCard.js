@@ -65,24 +65,28 @@ export function showCard() {
     celebration.style.display = "flex";
     startFireworks();
 
-    // After 2s show: shrink & fade the card out, then collect it
-    setTimeout(() => {
-        if (img) {
-            img.style.transition = "opacity 0.6s ease, transform 0.6s ease";
-            img.style.opacity = "0";
-            img.style.transform = "scale(0.25)";
-        }
-        setTimeout(() => {
-            addCollectedCard(currentCard);
-            hideCard();
-            // Reset for next use
+    // Wire up the X close button — one-time listener per show
+    const closeBtn = document.getElementById("close-card-btn");
+    if (closeBtn) {
+        const onClose = () => {
+            closeBtn.removeEventListener("click", onClose);
             if (img) {
-                img.style.transition = "";
-                img.style.opacity = "1";
-                img.style.transform = "";
+                img.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+                img.style.opacity = "0";
+                img.style.transform = "scale(0.25)";
             }
-        }, 650);
-    }, 2000);
+            setTimeout(() => {
+                addCollectedCard(currentCard);
+                hideCard();
+                if (img) {
+                    img.style.transition = "";
+                    img.style.opacity = "1";
+                    img.style.transform = "";
+                }
+            }, 420);
+        };
+        closeBtn.addEventListener("click", onClose);
+    }
 }
 
 export function hideCard() {

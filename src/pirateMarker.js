@@ -20,52 +20,30 @@ export function resetPirateMarker() {
 
 const foundCards = [];
 
-
 export function addCardToUser(card){
     foundCards.push(card);
 }
 
-
-
-
 export function createAnimatedPirateIcon() {
-    // Marker container
     const el = document.createElement('div');
     el.className = 'pirate-marker';
-    el.style.position = 'relative';
-    el.style.width = "64px";
-    el.style.height = "64px";
+    el.style.cssText = 'position:relative;width:64px;height:64px;display:block;';
 
-    // Player icon (centered, static)
     const pirateImg = document.createElement('img');
-    pirateImg.src = PIRATE_ICON;
     pirateImg.alt = "Player";
-    pirateImg.style.width = "64px";
-    pirateImg.style.height = "64px";
-    pirateImg.style.position = "absolute";
-    pirateImg.style.left = "0";
-    pirateImg.style.top = "0";
-    pirateImg.style.zIndex = 1;
+    pirateImg.style.cssText = 'width:64px;height:64px;position:absolute;left:0;top:0;z-index:1;display:block;';
     pirateImg.className = "bobbing-img";
 
-    // BIGGER Arrow (orbiting)
-    const arrow = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    arrow.setAttribute("id", "arrow");
-    arrow.setAttribute("viewBox", "0 0 64 64");
-    arrow.setAttribute("width", "64");     // was 32, now 64 for bigger arrow
-    arrow.setAttribute("height", "64");
-    arrow.style.position = 'absolute';
-    arrow.style.left = "0";               // center over player icon
-    arrow.style.top = "0";
-    arrow.style.transformOrigin = "50% 50%";
-    arrow.style.zIndex = 2;
-    // arrow.setAttribute("class", "arrow-image");
-    arrow.style.pointerEvents = "none";
-    arrow.innerHTML = `<polygon points="32,8 44,32 38,32 38,56 26,56 26,32 20,32" fill="gold" stroke="#233" stroke-width="2"/>`;
+    // Force a fresh load every time by busting the cache with a timestamp
+    pirateImg.src = PIRATE_ICON + '?v=' + Date.now();
+
+    pirateImg.onerror = () => {
+        // Retry once without cache-bust in case the ?v= breaks a strict server
+        pirateImg.onerror = null;
+        pirateImg.src = PIRATE_ICON;
+    };
 
     el.appendChild(pirateImg);
-    el.appendChild(arrow);
-
     return el;
 }
 
@@ -77,22 +55,18 @@ export function injectPirateCSS() {
     50% { transform: translateY(-10px);}
     100% { transform: translateY(0);}
   }
-  
+
   @keyframes scale {
-  0% { transform: scale(1);}
-  50% { transform: scale(1.15);}
-  100% { transform: scale(1);}
-}
+    0% { transform: scale(1);}
+    50% { transform: scale(1.15);}
+    100% { transform: scale(1);}
+  }
+
   .bobbing-img {
     animation: bob 1.2s infinite ease-in-out;
     will-change: transform;
   }
-  
-  .arrow-image {
-    animation: scale 1.2s infinite ease-in-out;
-    will-change: transform;
-  }
-  
+
   .pirate-marker {
     filter: drop-shadow(0 2px 40px #0008);
   }
@@ -109,26 +83,54 @@ export function updatePirateMarker(coords, map) {
     if (!userMarker) {
         pirateIconEl = createAnimatedPirateIcon();
         userMarker = new maplibregl.Marker({element: pirateIconEl, anchor: 'center'})
-            .setLngLat([coords[1], coords[0]]) // [lng, lat]
+            .setLngLat([coords[1], coords[0]])
             .addTo(map);
+
+        // Force a repaint tick so MapLibre renders the custom element reliably
+        requestAnimationFrame(() => {
+            if (pirateIconEl) pirateIconEl.style.display = 'block';
+        });
+
         return userMarker;
     } else {
-
-        // 17.959835529327393 59.28586586827325
-        userMarker.setLngLat([coords[1], coords[0]]); // [lng, lat]
-        return userMarker
+        userMarker.setLngLat([coords[1], coords[0]]);
+        return userMarker;
     }
 }
 
-
 export function updateArrow(angleToTreasure) {
+    const arrow = document.getElementById('screen-edge-arrow');
+    if (!arrow) return;
     if (angleToTreasure === null || angleToTreasure === undefined) return;
 
-    if (pirateIconEl) {
-        const arrow = pirateIconEl.querySelector('#arrow');
-        if (arrow) {
-            // Rotate arrow to point toward the treasure relative to device orientation
-            arrow.style.transform = `rotate(${angleToTreasure}deg)`;
-        }
-    }
+    const angle = angleToTreasure; // 0 = up/north, 90 = right
+    const rad = (angle * Math.PI) / 180;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const cx = vw / 2;
+    const cy = vh / 2;
+
+    const dx = Math.sin(rad);
+    const dy = -Math.cos(rad);
+
+    // Padding from screen edge so the 56px arrow is fully visible
+    const pad = 36;
+    const halfW = cx - pad;
+    const halfH = cy - pad;
+
+    const tx = Math.abs(dx) > 0.0001 ? halfW / Math.abs(dx) : Infinity;
+    const ty = Math.abs(dy) > 0.0001 ? halfH / Math.abs(dy) : Infinity;
+    const t = Math.min(tx, ty);
+
+    const x = cx + dx * t;
+    const y = cy + dy * t;
+
+    // Set CSS variable so the bounce animation uses the correct angle
+    arrow.style.setProperty('--arrow-angle', `${angle}deg`);
+    arrow.style.left = x + 'px';
+    arrow.style.top = y + 'px';
+    // Use CSS var in transform — animation overrides this but sets the var
+    arrow.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+    arrow.style.display = 'block';
 }

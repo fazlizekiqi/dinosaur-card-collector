@@ -89,11 +89,21 @@
     <img class="cloud cloud8" src="clouds.png"/>
 </div>
 
+<!-- Screen-edge directional arrow overlay -->
+<div id="screen-arrow-overlay" style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:500;">
+    <div id="screen-edge-arrow" style="display:none;position:absolute;pointer-events:none;width:48px;height:48px;">
+        <svg viewBox="0 0 48 48" width="48" height="48">
+            <polygon points="24,4 36,24 30,24 30,44 18,44 18,24 12,24" fill="gold" stroke="#333" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+    </div>
+</div>
+
 <!-- Card celebration -->
 <div id="t-rex-celebration"
      style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);z-index:9999;justify-content:center;align-items:center;flex-direction:column;">
-    <img src="" alt="T-Rex" style="width:300px;"/>
-    <canvas id="fireworks-canvas" style="position:absolute;top:0;left:0;width:100vw;height:100vh;pointer-events:none;"></canvas>
+    <canvas id="fireworks-canvas" style="position:absolute;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:1;"></canvas>
+    <img src="" alt="T-Rex" style="width:300px;position:relative;z-index:2;"/>
+    <button id="close-card-btn" style="position:fixed;top:24px;right:24px;font-size:2.5rem;background:rgba(30,20,10,0.75);border:2px solid rgba(255,255,255,0.5);border-radius:50%;width:3.5rem;height:3.5rem;color:white;cursor:pointer;z-index:10002;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 2px 12px rgba(0,0,0,0.5);">&times;</button>
 </div>
 
 <!-- Card zoom modal -->

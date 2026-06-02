@@ -66,11 +66,38 @@
     <img class="cloud cloud8" src="clouds.png" alt=""/>
 </div>
 
+<!-- Screen-edge directional arrow overlay -->
+<style>
+  @keyframes arrow-bounce {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.22); }
+  }
+  #screen-edge-arrow-inner {
+    animation: arrow-bounce 1s ease-in-out infinite;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+  }
+</style>
+<div id="screen-arrow-overlay" style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:500;">
+    <div id="screen-edge-arrow" style="display:none;position:absolute;pointer-events:none;width:60px;height:60px;">
+        <div id="screen-edge-arrow-inner" style="width:60px;height:60px;">
+            <svg viewBox="0 0 60 60" width="60" height="60" xmlns="http://www.w3.org/2000/svg">
+                <!-- dark shadow offset for depth -->
+                <polygon points="30,6 52,38 39,38 39,54 21,54 21,38 8,38"
+                         fill="rgba(0,0,0,0.35)" transform="translate(2,3)"/>
+                <!-- main arrow -->
+                <polygon points="30,6 52,38 39,38 39,54 21,54 21,38 8,38"
+                         fill="#FFD700" stroke="#5c3a1e" stroke-width="3.5" stroke-linejoin="round"/>
+            </svg>
+        </div>
+    </div>
+</div>
+
 <!-- Card celebration -->
 <div id="t-rex-celebration"
      style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);z-index:9999;justify-content:center;align-items:center;flex-direction:column;">
-    <img src="" alt="T-Rex" style="width:300px;"/>
-    <canvas id="fireworks-canvas" style="position:absolute;top:0;left:0;width:100vw;height:100vh;pointer-events:none;"></canvas>
+    <canvas id="fireworks-canvas" style="position:absolute;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:1;"></canvas>
+    <img src="" alt="T-Rex" style="width:300px;position:relative;z-index:2;"/>
+    <button id="close-card-btn" style="position:fixed;top:24px;right:24px;font-size:2.5rem;background:rgba(30,20,10,0.85);border:2px solid rgba(255,255,255,0.6);border-radius:50%;width:3.5rem;height:3.5rem;color:white;cursor:pointer;z-index:10002;display:flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 2px 12px rgba(0,0,0,0.5);">&times;</button>
 </div>
 
 <!-- Card zoom modal -->
