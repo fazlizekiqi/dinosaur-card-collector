@@ -4,7 +4,7 @@ import { showMessage, hideMessage } from './ui.js';
 import { showCard, getNextCard, initializeCards } from './showCard.js';
 import { addTreasureMarker } from './treasureMarker.js';
 import {updatePirateMarker, injectPirateCSS, updateArrow, resetPirateMarker} from './pirateMarker.js';
-import { distanceMeters, randomPointNear, getBearingBetween } from './utils.js';
+import { distanceMeters, randomPointNear } from './utils.js';
 import { getAuth, signOut } from 'firebase/auth';
 
 
@@ -15,6 +15,25 @@ export function initGame(){
     // Read user-configured radius from settings on home screen (default 150m)
     const TREASURE_DISTANCE_RADIUS = parseInt(localStorage.getItem('eggRadius') || '150', 10);
 
+    // ── All mutable state up front so nothing hits the temporal dead zone ──
+    let map;
+    let mapLoaded = false;
+    let userCoords;
+    let treasureCoords;
+    let win = false;
+    let currentHeading = null;
+    let arrowFollowsDevice = true;
+    let routeFetchController = null;
+    let fetchedRouteCoords   = null;
+    let routeFetchedFromCoords = null;
+
+    const MAP_STYLE = "https://api.maptiler.com/maps/0197dc02-f415-76e6-a860-fc5b1805cd22/style.json?key=4XkkKpwhltbHeFPyQbNh";
+    const DEFAULT_ZOOM = 15;
+    const ROUTE_SOURCE = 'route';
+    const ROUTE_LAYER  = 'route-line';
+    const REFETCH_DISTANCE_M = 40;
+    const moveStep = 0.00025;
+
     const fullscreenBtn = document.getElementById('fullscreen-btn');
     const dinoModal = document.getElementById('dino-collector-modal');
     const closeDinoModalBtn = document.getElementById('close-dino-modal-btn');
@@ -23,9 +42,24 @@ export function initGame(){
         dinoModal.classList.add('show');
     });
 
+    // "Let's go!" button — used on iOS to bundle both permission prompts in one gesture
     closeDinoModalBtn.addEventListener('click', () => {
         dinoModal.classList.remove('show');
+        requestOrientationPermission();
+        startTracking();
     });
+
+    // On non-iOS devices there is no orientation permission prompt,
+    // so start tracking immediately without waiting for the button
+    const needsGestureForPermission =
+        typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function';
+
+    if (!needsGestureForPermission) {
+        // Desktop / Android — start right away, register orientation listener too
+        requestOrientationPermission();
+        startTracking();
+    }
 
 
     // --- Profile modal ---
@@ -77,16 +111,6 @@ export function initGame(){
         lastTouchEnd = now;
     }, false);
 
-    const MAP_STYLE = "https://api.maptiler.com/maps/0197dc02-f415-76e6-a860-fc5b1805cd22/style.json?key=4XkkKpwhltbHeFPyQbNh";
-    const DEFAULT_ZOOM = 15;
-
-    let map;
-    let mapLoaded = false;          // true only after map 'load' fires
-    let userCoords;
-    let treasureCoords;
-
-    let win = false;
-    let currentHeading = null;
     const marker = document.querySelector('.maplibregl-user-location-dot');
     if (marker) marker.style.display = 'none';
 
@@ -125,92 +149,53 @@ export function initGame(){
         document.getElementById("card-modal").classList.remove("show");
     });
 
-    let arrowFollowsDevice = true;
-
     function refreshArrow() {
-        if (!userCoords || !treasureCoords) return;
+        // With heading-up mode the map itself shows direction — arrow is hidden
+        // Only used by devMode panel
+    }
 
-        let targetCoords; // [lat, lng] of where the arrow should point toward
-
-        if (fetchedRouteCoords && fetchedRouteCoords.length > 1) {
-            // fetchedRouteCoords is [[lng,lat], [lng,lat], ...]
-            // Find the closest point index on the route to the user
-            let closestIdx = 0;
-            let closestDist = Infinity;
-            for (let i = 0; i < fetchedRouteCoords.length; i++) {
-                const d = distanceMeters(userCoords, [fetchedRouteCoords[i][1], fetchedRouteCoords[i][0]]);
-                if (d < closestDist) { closestDist = d; closestIdx = i; }
-            }
-            // Look ahead ~3 waypoints along the route from the closest point
-            const lookahead = Math.min(closestIdx + 3, fetchedRouteCoords.length - 1);
-            const wp = fetchedRouteCoords[lookahead];
-            targetCoords = [wp[1], wp[0]]; // convert [lng,lat] → [lat,lng]
-        } else {
-            // No route yet — fall back to straight line toward egg
-            targetCoords = treasureCoords;
-        }
-
-        const bearing = getBearingBetween(userCoords, targetCoords);
-        if (currentHeading !== null && arrowFollowsDevice) {
-            updateArrow((bearing - currentHeading + 360) % 360);
-        } else {
-            updateArrow(bearing);
-        }
+    function applyHeadingToMap(heading) {
+        if (!map || !mapLoaded || !userCoords) return;
+        // Rotate map so the player's heading always points UP on screen
+        map.easeTo({
+            bearing: -heading,
+            center: [userCoords[1], userCoords[0]],
+            duration: 300,
+            easing: t => t
+        });
     }
 
     function handleOrientation(event) {
-        if (!arrowFollowsDevice) return;
         let heading;
-        if (typeof event.webkitCompassHeading !== "undefined") {
-            heading = event.webkitCompassHeading;
-        } else if (typeof event.alpha !== "undefined") {
-            heading = 360 - event.alpha;
+        if (typeof event.webkitCompassHeading !== 'undefined') {
+            heading = event.webkitCompassHeading; // iOS — already true north-relative
+        } else if (typeof event.alpha !== 'undefined') {
+            heading = (360 - event.alpha + 360) % 360;
         }
-        if (heading !== undefined && heading !== null) {
-            if (heading < 0) heading += 360;
-            currentHeading = heading;
-            refreshArrow();
-        }
+        if (heading === undefined || heading === null) return;
+        currentHeading = heading;
+        applyHeadingToMap(heading);
     }
 
+    function requestOrientationPermission() {
+        if (!window.DeviceOrientationEvent) return;
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            // iOS 13+ — must be called from a user gesture
+            DeviceOrientationEvent.requestPermission()
+                .then(response => {
+                    if (response === 'granted') {
+                        window.addEventListener('deviceorientation', handleOrientation, true);
+                    }
+                })
+                .catch(() => {});
+        } else {
+            // Android / desktop Chrome
+            window.addEventListener('deviceorientation', handleOrientation, true);
+        }
+    }
 
     function onMapRotate() {
-        // If the map is rotated away from north, stop arrow following device
-        if (Math.abs(map.getBearing()) > 1) {
-            arrowFollowsDevice = false;
-        } else {
-            arrowFollowsDevice = true;
-        }
-    }
-
-
-// Optionally, provide a button to reset map rotation and re-enable arrow
-    function resetMapRotation() {
-        map.rotateTo(0, {duration: 500});
-        arrowFollowsDevice = true;
-    }
-
-    function setupOrientationListener() {
-        if (window.DeviceOrientationEvent) {
-            function requestOrientationPermission() {
-                if (
-                    typeof DeviceOrientationEvent.requestPermission === "function"
-                ) {
-                    DeviceOrientationEvent.requestPermission()
-                        .then((response) => {
-                            if (response == "granted") {
-                                window.addEventListener("deviceorientation", handleOrientation, true);
-                            }
-                        })
-                        .catch(() => {
-                        });
-                } else {
-                    window.addEventListener("deviceorientation", handleOrientation, true);
-                }
-            }
-
-            window.addEventListener("click", requestOrientationPermission, {once: true});
-        }
+        arrowFollowsDevice = Math.abs(map.getBearing()) <= 1;
     }
 
     async function fetchRoute(start, end) {
@@ -221,14 +206,6 @@ export function initGame(){
         return data.features[0].geometry;
     }
 
-    // ── Route drawing — single stable source, updated with setData ──
-    const ROUTE_SOURCE = 'route';
-    const ROUTE_LAYER  = 'route-line';
-    let routeFetchController = null;
-    let fetchedRouteCoords   = null;   // the road-following coords from the last successful fetch
-    let routeFetchedFromCoords = null; // the userCoords at the time of the last fetch
-
-    const REFETCH_DISTANCE_M = 40;     // re-fetch the walking route after moving this far
 
     function ensureRouteLayer() {
         if (!map.getSource(ROUTE_SOURCE)) {
@@ -401,18 +378,12 @@ export function initGame(){
                 map.once('moveend', () => {
                     map.setMinZoom(DEFAULT_ZOOM + 2);
                     map.setMaxZoom(DEFAULT_ZOOM + 2);
-
                     setTimeout(() => {
                         cloudOverlay.style.display = 'none';
-                        clouds.forEach(cloud => {
-                            cloud.style.transform = 'translate(0,0)';
-                        });
+                        clouds.forEach(cloud => { cloud.style.transform = 'translate(0,0)'; });
                     }, 200);
                 });
 
-                setupOrientationListener();
-                // updateArrow(currentHeading);
-                drawRoute(userCoords, treasureCoords);
                 map.on('rotate', onMapRotate);
                 map.on('dragrotate', onMapRotate);
             });
@@ -420,7 +391,12 @@ export function initGame(){
             if (!mapLoaded) return;
             updatePirateMarker(userCoords, map);
             updateRouteStart(userCoords);
-            refreshArrow();
+            // Keep map centered on player as they walk
+            if (currentHeading !== null) {
+                applyHeadingToMap(currentHeading);
+            } else {
+                map.easeTo({ center: [userCoords[1], userCoords[0]], duration: 300 });
+            }
         }
         checkWinCondition();
     }
@@ -480,7 +456,8 @@ export function initGame(){
             angle = ((angle % 360) + 360) % 360;
             valEl.textContent = angle;
             slider.value = angle;
-            updateArrow(angle);
+            currentHeading = angle;
+            applyHeadingToMap(angle);
         }
 
         slider.addEventListener('input', () => fire(Number(slider.value)));
@@ -504,8 +481,7 @@ export function initGame(){
     // ============================================================
 
     window.devMode = false;
-    window.testArrow = (angle) => updateArrow(angle);
-    const moveStep = 0.00025;
+    window.testArrow = (angle) => { currentHeading = angle; applyHeadingToMap(angle); };
     function enablePirateMovement(map) {
         document.addEventListener('keydown', (event) => {
             if (!window.devMode || !mapLoaded) return;
@@ -549,11 +525,12 @@ export function initGame(){
         }
     }
 
-// Call showUserInfo on load
     showUserInfo();
-
-    initializeCards()
+    initializeCards();
     hideMessage();
-    showMessage('Finding your location...');
-    startTracking();
+
+    const _iosPermission =
+        typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function';
+    showMessage(_iosPermission ? "Tap 🦕 Let's go to start!" : 'Finding your location...');
 }
