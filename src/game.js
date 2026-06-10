@@ -13,7 +13,7 @@ export function initGame(){
     resetPirateMarker();
 
     // Read user-configured radius from settings on home screen (default 150m)
-    const TREASURE_DISTANCE_RADIUS = parseInt(localStorage.getItem('eggRadius') || '150', 10);
+    const TREASURE_DISTANCE_RADIUS = parseInt(localStorage.getItem('pokeballRadius') || '150', 10);
 
     // ── All mutable state up front so nothing hits the temporal dead zone ──
     let map;
@@ -27,7 +27,7 @@ export function initGame(){
     let fetchedRouteCoords   = null;
     let routeFetchedFromCoords = null;
 
-    const MAP_STYLE = "https://api.maptiler.com/maps/0197dc02-f415-76e6-a860-fc5b1805cd22/style.json?key=4XkkKpwhltbHeFPyQbNh";
+    const MAP_STYLE = "https://api.maptiler.com/maps/019eac3b-4543-7181-9c7b-e2694fa514e9/style.json?key=4XkkKpwhltbHeFPyQbNh";
     const DEFAULT_ZOOM = 15;
     const ROUTE_SOURCE = 'route';
     const ROUTE_LAYER  = 'route-line';
@@ -100,13 +100,32 @@ export function initGame(){
             });
         }
         // Update stats
-        document.getElementById('profile-stats').textContent = `${imgs.length} / 8 cards collected`;
+        document.getElementById('profile-stats').textContent = `${imgs.length} / 28 Pokémon collected`;
         profileModal.classList.add('show');
     }
 
     profileBtn.addEventListener('click', openProfileModal);
     closeProfileBtn.addEventListener('click', () => profileModal.classList.remove('show'));
     profileModal.addEventListener('click', (e) => { if (e.target === profileModal) profileModal.classList.remove('show'); });
+
+    // --- Settings modal ---
+    const settingsBtn = document.getElementById('settings-btn');
+    const settingsModal = document.getElementById('settings-modal');
+    const closeSettingsBtn = document.getElementById('close-settings-btn');
+    const radiusSelect = document.getElementById('in-game-radius-select');
+
+    if (settingsBtn && settingsModal) {
+        // Restore current radius in select
+        if (radiusSelect) {
+            radiusSelect.value = String(TREASURE_DISTANCE_RADIUS);
+            radiusSelect.addEventListener('change', () => {
+                localStorage.setItem('pokeballRadius', radiusSelect.value);
+            });
+        }
+        settingsBtn.addEventListener('click', () => settingsModal.classList.add('show'));
+        closeSettingsBtn.addEventListener('click', () => settingsModal.classList.remove('show'));
+        settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) settingsModal.classList.remove('show'); });
+    }
 
     let lastTouchEnd = 0;
 
@@ -127,7 +146,7 @@ export function initGame(){
         if (dist > 100) return '🌬️ Still cold… getting closer…';
         if (dist > 50)  return '☀️ Warm! You\'re getting there!';
         if (dist > 20)  return '🔥 Hot! Almost there!';
-        return '🌋 BURNING!! The egg is right here!!!';
+        return '🌋 BURNING!! The Pokéball is right here!!!';
     }
 
     function checkWinCondition() {
@@ -139,13 +158,13 @@ export function initGame(){
         if (dist <= 15) {
             win = true;
             clearRoute();                   // hide old path during celebration
-            showMessage('🥚 You found the egg! Amazing!');
+            showMessage('⚽ You found the Pokéball! Amazing!');
             getNextCard();
             showCard();
-            generateRandomTreasure();       // place new egg + draw new path immediately
+            generateRandomTreasure();       // place new Pokéball + draw new path immediately
             setTimeout(() => {
                 win = false;
-                showMessage('🦕 Let\'s find the next egg!');
+                showMessage('🎮 Let\'s find the next Pokéball!');
             }, 5000);
         }
     }
@@ -418,7 +437,7 @@ export function initGame(){
             showMessage('Geolocation is not supported by your browser.');
             return;
         }
-        showMessage('Go find that egg.');
+        showMessage('Go find that Pokéball.');
         navigator.geolocation.getCurrentPosition(onPosition, onError, {
             enableHighAccuracy: true,
             timeout: 25000,
@@ -511,7 +530,7 @@ export function initGame(){
 
     document.getElementById('signout-btn').addEventListener('click', () => {
         signOut(getAuth()).then(() => {
-            window.location.href = '/dinosaur-card-collector/'; // Redirect to homepage
+            window.location.href = '/pokemon-card-collector/'; // Redirect to homepage
         }).catch((error) => {
             alert('Sign out failed.');
             console.error(error);
@@ -541,5 +560,5 @@ export function initGame(){
     const _iosPermission =
         typeof DeviceOrientationEvent !== 'undefined' &&
         typeof DeviceOrientationEvent.requestPermission === 'function';
-    showMessage(_iosPermission ? "Tap 🦕 Let's go to start!" : 'Finding your location...');
+    showMessage(_iosPermission ? "Tap ⚽ Let's go to start!" : 'Finding your location...');
 }

@@ -1,6 +1,6 @@
 {
-  "name": "Dinosaur Collector",
-  "short_name": "App",
+  "name": "Pokémon Collector",
+  "short_name": "PokéCollector",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",

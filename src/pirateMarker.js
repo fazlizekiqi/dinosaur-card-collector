@@ -86,7 +86,7 @@ export function injectPirateCSS() {
     filter: drop-shadow(0 2px 40px #0008);
   }
   .treasure-marker {
-    filter: drop-shadow(0 0 6px gold);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
   }
   `;
     const style = document.createElement('style');

@@ -12,8 +12,8 @@ export function startFireworks() {
     fireworksParticles = [];
 
     function goldColor() {
-        const golds = ['#FFD700', '#FFF700', '#FFB300', '#FFEC8B', '#FFFACD'];
-        return golds[Math.floor(Math.random() * golds.length)];
+        const colors = ['#FFD700', '#FFF700', '#FFB300', '#FFEC8B', '#FFFACD', '#FF4444', '#FF6B6B', '#cc0000', '#ff0000'];
+        return colors[Math.floor(Math.random() * colors.length)];
     }
 
     function createParticle() {

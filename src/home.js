@@ -10,15 +10,15 @@ const radiusHint = document.getElementById('radius-hint');
 
 
 function setRadius(value) {
-    localStorage.setItem('eggRadius', String(value));
+    localStorage.setItem('pokeballRadius', String(value));
     document.querySelectorAll('.radius-opt').forEach(btn => {
         btn.classList.toggle('selected', btn.dataset.value === String(value));
     });
-    if (radiusHint) radiusHint.textContent = `Egg will be hidden ~${value} m from you.`;
+    if (radiusHint) radiusHint.textContent = `Pokéball will be hidden ~${value} m from you.`;
 }
 
 // Restore saved radius on load
-const savedRadius = parseInt(localStorage.getItem('eggRadius') || '150', 10);
+const savedRadius = parseInt(localStorage.getItem('pokeballRadius') || '150', 10);
 setRadius(savedRadius);
 
 document.querySelectorAll('.radius-opt').forEach(btn => {
@@ -88,7 +88,7 @@ function showSpinner() {
         spinner.style.alignItems = 'center';
         spinner.style.justifyContent = 'center';
         spinner.style.zIndex = '10001';
-        spinner.innerHTML = `<img src="treasure.png" alt="Loading..." class="spinner-egg">`;
+        spinner.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="72" height="72" class="spinner-egg"><path d="M4 32 A28 28 0 0 1 60 32 Z" fill="#cc0000"/><path d="M4 32 A28 28 0 0 0 60 32 Z" fill="#ffffff"/><rect x="4" y="29.5" width="56" height="5" fill="#111" rx="2"/><circle cx="32" cy="32" r="10" fill="#111"/><circle cx="32" cy="32" r="7" fill="#fff"/><circle cx="29" cy="29" r="2.5" fill="rgba(255,255,255,0.7)"/></svg>`;
         document.body.appendChild(spinner);
     }
     spinner.style.display = 'flex';
@@ -143,8 +143,9 @@ onAuthStateChanged(auth, (user) => {
                 notLoggedMsg = document.createElement('div');
                 notLoggedMsg.id = 'not-logged-message';
                 notLoggedMsg.className = 'not-logged-message';
-                notLoggedMsg.innerHTML = '<span>🦕 You are not logged in</span>';
-                homeContainer.insertBefore(notLoggedMsg, homeContainer.firstChild);
+                notLoggedMsg.innerHTML = '<span>🎮 You are not logged in</span>';
+                const loginCard = homeContainer.querySelector('.login-card');
+                homeContainer.insertBefore(notLoggedMsg, loginCard);
             } else {
                 notLoggedMsg.style.display = 'block';
             }

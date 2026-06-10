@@ -1,0 +1,91 @@
+{
+  "version": 8,
+  "name": "Pokémon World — Kids",
+  "glyphs": "https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=YOUR_MAPTILER_KEY",
+  "sprite": "https://api.maptiler.com/maps/basic-v2/sprite",
+  "sources": {
+    "openmaptiles": {
+      "type": "vector",
+      "url": "https://api.maptiler.com/tiles/v3/tiles.json?key=YOUR_MAPTILER_KEY"
+    }
+  },
+  "layers": [
+
+    {
+      "id": "background",
+      "type": "background",
+      "paint": { "background-color": "#6abf3c" }
+    },
+
+    {
+      "id": "water",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "water",
+      "paint": { "fill-color": "#3a9fea" }
+    },
+
+    {
+      "id": "forest",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "landcover",
+      "filter": ["in", "class", "wood", "forest"],
+      "paint": { "fill-color": "#2e8a18" }
+    },
+
+    {
+      "id": "buildings",
+      "type": "fill",
+      "source": "openmaptiles",
+      "source-layer": "building",
+      "paint": {
+        "fill-color": "#f0d080",
+        "fill-outline-color": "#b09040"
+      }
+    },
+
+    {
+      "id": "roads-outline",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "filter": ["in", "class", "primary", "secondary", "tertiary", "minor", "motorway", "trunk"],
+      "paint": {
+        "line-color": "#a07820",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 4, 16, 18]
+      }
+    },
+
+    {
+      "id": "roads",
+      "type": "line",
+      "source": "openmaptiles",
+      "source-layer": "transportation",
+      "filter": ["in", "class", "primary", "secondary", "tertiary", "minor", "motorway", "trunk"],
+      "paint": {
+        "line-color": "#ffe840",
+        "line-width": ["interpolate", ["linear"], ["zoom"], 6, 2, 16, 13]
+      }
+    },
+
+    {
+      "id": "place-labels",
+      "type": "symbol",
+      "source": "openmaptiles",
+      "source-layer": "place",
+      "filter": ["in", "class", "city", "town", "village"],
+      "layout": {
+        "text-field": ["get", "name"],
+        "text-font": ["Noto Sans Bold"],
+        "text-size": ["interpolate", ["linear"], ["zoom"], 6, 13, 14, 22]
+      },
+      "paint": {
+        "text-color": "#1a0e5c",
+        "text-halo-color": "#ffffff",
+        "text-halo-width": 3
+      }
+    }
+
+  ]
+}

@@ -1,20 +1,34 @@
 html, body {
   min-height: calc(100% + env(safe-area-inset-top));
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-  
-  border: 1px solid black;
   margin: 0;
-  padding: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow-x: hidden;
 }
 
-/* Game-themed background */
+/* Pokémon-themed background — deep red gradient like the Pokédex */
 .background {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     z-index: 0;
-    background: url('../public/clouds.png') center top repeat-x, linear-gradient(180deg, #e6e2c3 0%, #b6d7a8 100%);
-    background-size: cover, auto;
-    opacity: 0.7;
+    background-color: #7f0000;
+    background-image:
+        radial-gradient(ellipse at 50%   0%,  #c0392b 0%,  transparent 60%),
+        radial-gradient(ellipse at 0%   50%,  #96281b 0%,  transparent 55%),
+        radial-gradient(ellipse at 100% 50%,  #7f0000 0%,  transparent 55%),
+        radial-gradient(ellipse at 50%  100%, #4a0000 0%,  transparent 60%);
+    background-attachment: fixed;
+}
+
+/* Hide scrollbars everywhere */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .maplibregl-user-location-dot {
@@ -33,16 +47,18 @@ html, body {
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(252, 237, 195, 0.95);
-  color: #382110;
+  background: rgba(255, 255, 255, 0.97);
+  color: #c0392b;
   padding: 12px 24px;
-  border-radius: 10px;
+  border-radius: 24px;
   font-size: .75rem;
-  font-weight: bold;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  font-weight: 900;
+  box-shadow: 0 2px 16px rgba(192,57,43,0.25), 0 0 0 3px #FFD700;
   z-index: 10;
   display: none;
   pointer-events: none;
+  letter-spacing: 0.5px;
+  border: 2px solid #FFD700;
 }
 
 @keyframes bob {
@@ -55,21 +71,22 @@ html, body {
   will-change: transform;
 }
 
+/* Pokéball wiggle animation */
 .treasure-marker {
-  animation: crack-move 1s infinite alternate;
+  animation: pokeball-spin 1.4s infinite alternate;
 }
 
-@keyframes crack-move {
-    0% { transform: rotate(-2deg) scale(1); }
-    20% { transform: rotate(2deg) scale(1.02); }
-    40% { transform: rotate(-1deg) scale(1.01); }
-    60% { transform: rotate(1deg) scale(1.03); }
-    80% { transform: rotate(-2deg) scale(1.01); }
-    100% { transform: rotate(2deg) scale(1); }
+@keyframes pokeball-spin {
+    0%   { transform: rotate(-5deg) scale(1); }
+    20%  { transform: rotate(5deg)  scale(1.02); }
+    40%  { transform: rotate(-3deg) scale(1.01); }
+    60%  { transform: rotate(3deg)  scale(1.03); }
+    80%  { transform: rotate(-5deg) scale(1.01); }
+    100% { transform: rotate(5deg)  scale(1); }
 }
 
 #fullscreen-btn:hover {
-  background: #f0f0f0;
+  background: rgba(255,255,255,0.25);
 }
 
 #cloud-overlay .cloud {
@@ -114,9 +131,8 @@ html, body {
     height: 3.2rem;
     border-radius: 50%;
     border: none;
-    background: rgba(255,255,255,0.18);
-    backdrop-filter: blur(6px);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.45);
+    background: rgba(192, 57, 43, 0.72);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.45), 0 0 0 2px rgba(255,215,0,0.5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -124,8 +140,8 @@ html, body {
     transition: background 0.2s, transform 0.15s;
 }
 .hud-btn:hover, .hud-btn:active {
-    background: rgba(255,255,255,0.35);
-    transform: scale(1.08);
+    background: rgba(220, 80, 60, 0.85);
+    transform: scale(1.1);
 }
 
 /* ── In-game generic modal overlay ── */
@@ -134,7 +150,7 @@ html, body {
     position: fixed;
     top: 0; left: 0;
     width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.65);
     z-index: 10500;
     justify-content: center;
     align-items: center;
@@ -145,15 +161,16 @@ html, body {
     display: flex;
 }
 .game-modal-card {
-    background: #fffbe6;
-    border-radius: 20px;
-    box-shadow: 0 6px 32px rgba(80,60,20,0.22);
+    background: #fff8f8;
+    border-radius: 24px;
+    box-shadow: 0 6px 40px rgba(192,57,43,0.25), 0 0 0 3px #FFD700;
     padding: 2rem 1.5rem 1.5rem;
     width: 100%;
     max-width: 360px;
     max-height: 85vh;
     overflow-y: auto;
     position: relative;
+    border: 2px solid #c0392b;
 }
 .game-modal-close {
     position: absolute;
@@ -161,15 +178,16 @@ html, body {
     background: none;
     border: none;
     font-size: 2rem;
-    color: #7a5c1e;
+    color: #c0392b;
     cursor: pointer;
     line-height: 1;
 }
-.game-modal-close:hover { color: #382110; }
+.game-modal-close:hover { color: #7f0000; }
 .game-modal-title {
-    font-family: 'Trebuchet MS', 'Comic Sans MS', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 1.25rem;
-    color: #4e3c1e;
+    font-weight: 900;
+    color: #c0392b;
     margin: 0 0 1rem 0;
     text-align: center;
 }
@@ -182,7 +200,7 @@ html, body {
 .game-setting-label {
     font-size: 0.95rem;
     font-weight: bold;
-    color: #382110;
+    color: #7f0000;
 }
 
 /* ── Profile modal ── */
@@ -190,9 +208,10 @@ html, body {
     display: flex;
     align-items: center;
     gap: 1rem;
-    background: rgba(200,168,107,0.15);
+    background: rgba(192,57,43,0.08);
     border-radius: 12px;
     padding: 0.8rem 1rem;
+    border: 1px solid rgba(192,57,43,0.15);
 }
 #profile-cards-grid {
     display: grid;
@@ -202,21 +221,21 @@ html, body {
 }
 .profile-card-thumb {
     width: 100%;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 1 / 1;
     object-fit: contain;
     border-radius: 10px;
-    background: rgba(200,168,107,0.12);
-    border: 2px solid #c8a86b;
+    background: rgba(255, 248, 248, 0.92);
+    border: 2px solid #FFD700;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
 }
 .profile-card-thumb:hover {
-    transform: scale(1.06);
-    box-shadow: 0 4px 12px rgba(80,60,20,0.25);
+    transform: scale(1.08);
+    box-shadow: 0 4px 16px rgba(192,57,43,0.3);
 }
 
 
-/*Show collected cards on click*/
+/* Show collected cards on click */
 #card-modal {
     display: none;
     position: fixed;
@@ -233,18 +252,18 @@ html, body {
 }
 
 #close-modal-btn:hover {
-    background: #f0f0f0;
-    color: #382110;
+    background: #ffe0e0;
+    color: #7f0000;
 }
 
 
-/*Dinocollector modal */
+/* Pokémon trainer intro modal */
 #dino-collector-modal {
     display: none;
     position: fixed;
     top: 0; left: 0;
     width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.72);
     z-index: 10000;
     justify-content: center;
     align-items: center;
@@ -256,33 +275,34 @@ html, body {
 }
 
 .speech-bubble {
-    background: rgba(252, 237, 195, 0.95);
-    color: #382110;
-    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.97);
+    color: #c0392b;
+    border-radius: 20px;
     padding: 18px 32px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    font-size: 1.05rem;
+    font-weight: 700;
+    box-shadow: 0 2px 20px rgba(192,57,43,0.25), 0 0 0 3px #FFD700;
     position: relative;
     max-width: 340px;
     margin-bottom: 24px;
     text-align: center;
+    border: 2px solid #FFD700;
 }
 
 .speech-bubble:after {
     content: '';
     position: absolute;
-    bottom: -18px;
+    bottom: -20px;
     left: 50%;
     transform: translateX(-50%);
-    border-width: 18px 18px 0;
+    border-width: 20px 18px 0;
     border-style: solid;
-    border-color: rgba(252,237,195,0.95) transparent transparent transparent;
+    border-color: rgba(255,255,255,0.97) transparent transparent transparent;
     display: block;
     width: 0;
 }
 
-/*HOME*/
+/* ── HOME ── */
 .home-container {
     position: relative;
     z-index: 1;
@@ -290,39 +310,84 @@ html, body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-start;
+    padding-bottom: 2.5rem;
+}
+
+/* ── Banner hero ── */
+.banner-hero {
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    margin-bottom: -0.5rem;
+}
+
+.banner-img {
+    width: 100%;
+    height: clamp(150px, 30vw, 300px);
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    filter: saturate(1.15) brightness(0.8);
+}
+
+.banner-fade-bottom {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 65%;
+    background: linear-gradient(to bottom, transparent, #7f0000);
+    pointer-events: none;
+}
+
+.banner-title-wrap {
+    position: absolute;
+    bottom: 12px;
+    left: 0; right: 0;
+    display: flex;
     justify-content: center;
+    pointer-events: none;
+    z-index: 2;
+    padding: 0 1rem;
+}
+
+.banner-title-wrap .game-title {
+    font-size: clamp(1.25rem, 5.5vw, 2.2rem);
+    white-space: nowrap;
+    margin: 0;
 }
 
 .logo-section {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 0.8rem;
+    margin-top: 0.5rem;
 }
 
 .game-logo {
-    width: 120px;
+    width: 90px;
     height: auto;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
+    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
 }
 
 .game-title {
-    font-family: 'Trebuchet MS', 'Comic Sans MS', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 2.2rem;
-    color: #4e3c1e;
+    font-weight: 900;
+    color: #FFD700;
     margin: 0;
-    letter-spacing: 2px;
-    text-shadow: 1px 2px 0 #fff7d6, 0 0 8px #b6d7a8;
+    letter-spacing: 1px;
+    text-shadow: 2px 3px 0 #7f0000, 0 0 24px rgba(255,215,0,0.4);
 }
 
 .subtitle {
-    color: #5a4a2d;
-    font-size: 1.1rem;
+    color: rgba(255,255,255,0.85);
+    font-size: 1rem;
     margin-bottom: 1.5rem;
+    font-weight: 500;
 }
 
 .login-card {
-    /*background: rgba(255,255,255,0.95);*/
-    /*border-radius: 18px;*/
-    /*box-shadow: 0 4px 24px rgba(80,60,20,0.12);*/
     padding: 2rem 1.5rem;
     display: flex;
     flex-direction: column;
@@ -335,21 +400,24 @@ html, body {
 .login-btn {
     display: flex;
     align-items: center;
-    font-size: 1.1rem;
-    font-family: inherit;
-    background: #f7e7c6;
-    color: #4e3c1e;
+    font-size: 1rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    background: rgba(255,255,255,0.95);
+    color: #7f0000;
     border: none;
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 0.7rem 1rem;
     margin: 0;
     cursor: pointer;
-    transition: background 0.2s, box-shadow 0.2s;
-    box-shadow: 0 2px 8px rgba(80,60,20,0.08);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.12s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18), 0 0 0 2px rgba(255,215,0,0.35);
 }
 .login-btn:hover {
-    background: #ffe6a1;
-    box-shadow: 0 4px 16px rgba(80,60,20,0.16);
+    background: #FFD700;
+    color: #7f0000;
+    box-shadow: 0 4px 20px rgba(255,215,0,0.4), 0 0 0 2px #FFD700;
+    transform: translateY(-2px);
 }
 .btn-icon {
     height: 40px;
@@ -358,56 +426,66 @@ html, body {
     vertical-align: middle;
     object-fit: contain;
     border-radius: 8px;
-    /*background: rgba(255,255,255,0.7);*/
-    /*box-shadow: 0 2px 8px rgba(0,0,0,0.08);*/
+}
+
+/* Pokemon pixel sprites — crisp rendering */
+.btn-sprite {
+    height: 48px;
+    width: 48px;
+    image-rendering: pixelated;
+    border-radius: 0;
+    background: transparent;
+    filter: drop-shadow(1px 2px 3px rgba(0,0,0,0.4));
 }
 
 .google {
-    background: #d0f0c0;
-    color: #2d5c2d;
+    background: rgba(255,255,255,0.95);
+    color: #c0392b;
 }
 .google:hover {
-    background: #b6d7a8;
+    background: #FFD700;
 }
 
 .email-login {
-    background: #e6e2c3;
-    color: #4e3c1e;
+    background: rgba(255,255,255,0.92);
+    color: #7f0000;
 }
 .email-login:hover {
-    background: #f7e7c6;
+    background: #FFD700;
 }
 
 .guest {
-    background: #cce6ff;
-    color: #2d4e6c;
+    background: rgba(255,255,255,0.88);
+    color: #c0392b;
 }
 .guest:hover {
-    background: #b3d1f7;
+    background: #FFD700;
 }
 
 .email-register {
-    background: #ffe6a1;
-    color: #7a5c1e;
+    background: rgba(255,215,0,0.22);
+    color: #fff;
+    border: 1.5px solid rgba(255,215,0,0.5);
 }
 .email-register:hover {
-    background: #f7e7c6;
+    background: #FFD700;
+    color: #7f0000;
 }
 
 /* Modal styles for email login/register */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(80,60,20,0.25);
+    background: rgba(0,0,0,0.5);
     z-index: 10000;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 .modal-card {
-    background: #fffbe6;
-    border-radius: 20px;
-    box-shadow: 0 6px 32px rgba(80,60,20,0.18);
+    background: #fff8f8;
+    border-radius: 24px;
+    box-shadow: 0 6px 40px rgba(192,57,43,0.25), 0 0 0 3px #FFD700;
     padding: 2rem 1.5rem 1.5rem 1.5rem;
     min-width: 300px;
     max-width: 350px;
@@ -415,6 +493,7 @@ html, body {
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    border: 2px solid #c0392b;
 }
 .close-modal {
     position: absolute;
@@ -423,17 +502,18 @@ html, body {
     background: none;
     border: none;
     font-size: 2rem;
-    color: #7a5c1e;
+    color: #c0392b;
     cursor: pointer;
     transition: color 0.2s;
     z-index: 1;
 }
 .close-modal:hover {
-    color: #b6d7a8;
+    color: #FFD700;
 }
 .modal-title {
-    font-family: 'Trebuchet MS', 'Comic Sans MS', sans-serif;
-    color: #4e3c1e;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 900;
+    color: #c0392b;
     font-size: 1.3rem;
     margin-bottom: 1.2rem;
     text-align: center;
@@ -441,17 +521,17 @@ html, body {
 .modal-input {
     font-size: 1rem;
     padding: 0.7rem 1rem;
-    border-radius: 10px;
-    border: 1px solid #e6e2c3;
+    border-radius: 12px;
+    border: 1.5px solid #e0a0a0;
     margin-bottom: 1rem;
-    background: #f7e7c6;
-    color: #4e3c1e;
-    font-family: inherit;
+    background: #fff;
+    color: #7f0000;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     outline: none;
     transition: border 0.2s;
 }
 .modal-input:focus {
-    border: 1.5px solid #b6d7a8;
+    border: 1.5px solid #FFD700;
     background: #fffbe6;
 }
 .modal-form {
@@ -462,24 +542,24 @@ html, body {
 .modal-switch {
     text-align: center;
     font-size: 0.95rem;
-    color: #5a4a2d;
+    color: #96281b;
     margin-top: 0.5rem;
 }
 .modal-switch a {
-    color: #2d5c2d;
+    color: #c0392b;
     text-decoration: underline;
     cursor: pointer;
     font-weight: bold;
 }
 .modal-switch a:hover {
-    color: #7a5c1e;
+    color: #FFD700;
 }
 
 /* Spinner and error styles for modal */
 #modal-spinner {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.8);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -488,55 +568,57 @@ html, body {
 .spinner-egg {
     width: 64px;
     height: 64px;
-    animation: crack-wiggle 1s infinite cubic-bezier(.36,.07,.19,.97);
+    animation: pokeball-bounce 1s infinite cubic-bezier(.36,.07,.19,.97);
 }
-@keyframes crack-wiggle {
-    0% { transform: rotate(-8deg) scale(1); }
-    10% { transform: rotate(8deg) scale(1.05); }
-    20% { transform: rotate(-6deg) scale(1.03); }
-    30% { transform: rotate(6deg) scale(1.07); }
-    40% { transform: rotate(-4deg) scale(1.04); }
-    50% { transform: rotate(4deg) scale(1.08); }
-    60% { transform: rotate(-2deg) scale(1.05); }
-    70% { transform: rotate(2deg) scale(1.09); }
-    80% { transform: rotate(0deg) scale(1.1); }
-    100% { transform: rotate(0deg) scale(1); }
+@keyframes pokeball-bounce {
+    0%   { transform: rotate(-8deg)  scale(1); }
+    10%  { transform: rotate(8deg)   scale(1.05); }
+    20%  { transform: rotate(-6deg)  scale(1.03); }
+    30%  { transform: rotate(6deg)   scale(1.07); }
+    40%  { transform: rotate(-4deg)  scale(1.04); }
+    50%  { transform: rotate(4deg)   scale(1.08); }
+    60%  { transform: rotate(-2deg)  scale(1.05); }
+    70%  { transform: rotate(2deg)   scale(1.09); }
+    80%  { transform: rotate(0deg)   scale(1.1); }
+    100% { transform: rotate(0deg)   scale(1); }
 }
 .modal-error {
-    background: #ffe6a1;
+    background: #ffe0e0;
     color: #b22222;
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 0.7rem 1rem;
-    margin: 0.5rem 0 0.5rem 0;
+    margin: 0.5rem 0;
     text-align: center;
     font-size: 1rem;
     font-weight: bold;
-    box-shadow: 0 2px 8px rgba(80,60,20,0.08);
+    box-shadow: 0 2px 8px rgba(192,57,43,0.1);
     display: none;
+    border: 1px solid rgba(192,57,43,0.2);
 }
 
-/* ── Home screen settings button (top-right corner) ── */
+/* ── Home screen settings button (inside banner, top-right) ── */
 .home-settings-btn {
-    position: fixed;
-    top: 16px;
-    right: 16px;
-    z-index: 200;
-    width: 3rem;
-    height: 3rem;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 5;
+    width: 2.6rem;
+    height: 2.6rem;
     border-radius: 50%;
     border: none;
-    background: rgba(255, 255, 255, 0.22);
-    backdrop-filter: blur(6px);
-    font-size: 1.4rem;
+    background: rgba(0,0,0,0.35);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 0 1.5px rgba(255,215,0,0.5);
+    font-size: 1.2rem;
     cursor: pointer;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.18);
     display: flex;
     align-items: center;
     justify-content: center;
     transition: background 0.2s, transform 0.15s;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
 .home-settings-btn:hover, .home-settings-btn:active {
-    background: rgba(255,255,255,0.45);
+    background: rgba(255,215,0,0.35);
     transform: rotate(22deg) scale(1.08);
 }
 
@@ -554,7 +636,7 @@ html, body {
 .home-settings-label {
     font-size: 0.95rem;
     font-weight: bold;
-    color: #4e3c1e;
+    color: #c0392b;
     text-align: center;
 }
 
@@ -572,28 +654,58 @@ html, body {
     padding: 0.65rem 0.3rem;
     border-radius: 14px;
     border: 2px solid transparent;
-    background: #f7e7c6;
+    background: rgba(255,255,255,0.88);
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s, transform 0.12s;
-    font-family: inherit;
+    font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .radius-opt:hover {
-    background: #ffe6a1;
+    background: #ffe0e0;
     transform: translateY(-2px);
 }
 .radius-opt.selected {
-    border-color: #c8a86b;
-    background: #fff0c2;
-    box-shadow: 0 2px 8px rgba(200,168,107,0.35);
+    border-color: #FFD700;
+    background: #fff8e1;
+    box-shadow: 0 2px 10px rgba(255,215,0,0.35);
 }
 .radius-icon { font-size: 1.5rem; line-height: 1; }
-.radius-name { font-size: 0.75rem; font-weight: bold; color: #4e3c1e; }
-.radius-dist { font-size: 0.7rem; color: #7a5c1e; }
+.radius-name { font-size: 0.75rem; font-weight: bold; color: #c0392b; }
+.radius-dist { font-size: 0.7rem; color: #96281b; }
 .settings-hint {
     font-size: 0.78rem;
-    color: #7a5c1e;
+    color: rgba(255,255,255,0.75);
     margin: 0;
     text-align: center;
+}
+.settings-select {
+    font-size: 0.95rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+    border: 1.5px solid #e0a0a0;
+    background: #fff;
+    color: #7f0000;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer;
+    outline: none;
+}
+.settings-select:focus {
+    border-color: #FFD700;
+}
+
+/* ── Not logged in message ── */
+.not-logged-message {
+    background: rgba(255,255,255,0.12);
+    color: #FFD700;
+    border-radius: 14px;
+    padding: 0.55rem 1.2rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-align: center;
+    margin: 0 0 0.4rem 0;
+    border: 1.5px solid rgba(255,215,0,0.35);
+    width: 100%;
+    max-width: 340px;
+    box-sizing: border-box;
 }
 
 @media (max-width: 600px) {
@@ -602,13 +714,16 @@ html, body {
         padding: 1rem 0.5rem;
     }
     .game-logo {
-        width: 80px;
+        width: 70px;
     }
     .game-title {
-        font-size: 1.3rem;
+        font-size: 1.4rem;
+    }
+    .banner-img {
+        height: clamp(120px, 42vw, 200px);
     }
     .modal-card {
         min-width: 90vw;
-        padding: 1rem 0.5rem 1rem 0.5rem;
+        padding: 1rem 0.5rem;
     }
 }

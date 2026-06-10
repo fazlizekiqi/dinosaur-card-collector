@@ -1,10 +1,21 @@
 import maplibregl from 'maplibre-gl';
 
-const TREASURE_ICON = `${import.meta.env.BASE_URL}treasure.png`;
-
-// Preload
-const _preload = new Image();
-_preload.src = TREASURE_ICON;
+// Pokéball inline SVG — no external asset needed
+const POKEBALL_SVG = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="50" height="50">
+  <!-- Top half (red) -->
+  <path d="M4 32 A28 28 0 0 1 60 32 Z" fill="#cc0000"/>
+  <!-- Bottom half (white) -->
+  <path d="M4 32 A28 28 0 0 0 60 32 Z" fill="#ffffff"/>
+  <!-- Center band (black) -->
+  <rect x="4" y="29.5" width="56" height="5" fill="#111111" rx="2"/>
+  <!-- Center button (outer black ring) -->
+  <circle cx="32" cy="32" r="10" fill="#111111"/>
+  <!-- Center button (white) -->
+  <circle cx="32" cy="32" r="7" fill="#ffffff"/>
+  <!-- Center button (highlight) -->
+  <circle cx="29" cy="29" r="2.5" fill="rgba(255,255,255,0.7)"/>
+</svg>`;
 
 let treasureMarker;
 
@@ -19,19 +30,8 @@ export function addTreasureMarker(coords, map) {
 
     const el = document.createElement('div');
     el.className = 'treasure-marker';
-    el.style.cssText = 'width:75px;height:75px;background-size:contain;background-repeat:no-repeat;background-position:center;';
-
-    // Cache-bust to avoid stale/empty cached response
-    const img = new Image();
-    img.onload = () => {
-        el.style.backgroundImage = `url(${img.src})`;
-    };
-    img.onerror = () => {
-        // Retry without cache-bust
-        img.onerror = null;
-        img.src = TREASURE_ICON;
-    };
-    img.src = TREASURE_ICON + '?v=' + Date.now();
+    el.style.cssText = 'width:50px;height:50px;display:flex;align-items:center;justify-content:center;';
+    el.innerHTML = POKEBALL_SVG;
 
     container.appendChild(el);
 
@@ -39,4 +39,3 @@ export function addTreasureMarker(coords, map) {
         .setLngLat([coords[1], coords[0]])
         .addTo(map);
 }
-
