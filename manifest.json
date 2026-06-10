@@ -1,13 +1,14 @@
 {
-  "name": "Dinosaur Card Collector",
-  "short_name": "DinoCard Collector",
-  "start_url": "/dinosaur-card-collector/index.html",
+  "name": "Pokémon Card Collector",
+  "short_name": "PokéCard Collector",
+  "start_url": "/pokemon-card-collector/pokemon-collector/index.html",
+  "scope": "/pokemon-card-collector/pokemon-collector/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#7f0000",
+  "theme_color": "#c0392b",
   "icons": [
     {
-      "src": "/dinosaur-card-collector/palentologist.png",
+      "src": "/pokemon-card-collector/pokemon-collector/palentologist.png",
       "sizes": "192x192",
       "type": "image/png"
     }
