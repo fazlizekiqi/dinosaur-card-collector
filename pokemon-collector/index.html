@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pokémon Card Collector</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,700;0,900&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/pokemon-card-collector/pokemon-collector/manifest.json"/>
+  <script type="module" crossorigin src="/pokemon-card-collector/pokemon-collector/assets/index-BIsnHWHB.js"></script>
+  <link rel="stylesheet" crossorigin href="/pokemon-card-collector/pokemon-collector/assets/index-vEmliDNQ.css">
+</head>
+<body>
+    <div class="background"></div>
+
+    <div class="home-container">
+
+        <!-- ── Banner Hero ── -->
+        <div class="banner-hero">
+            <img src="/pokemon-card-collector/pokemon-collector/assets/banner-BVgTZ7MV.png" alt="Pokémon Card Collector Banner" class="banner-img" />
+            <div class="banner-fade-bottom"></div>
+            <div class="banner-title-wrap">
+                <h1 class="game-title">Pokémon Card Collector</h1>
+            </div>
+            <!-- Settings button anchored inside the banner -->
+            <button id="home-settings-btn" class="home-settings-btn" title="Settings" aria-label="Open Settings">
+                ⚙️
+            </button>
+        </div>
+
+        <div class="logo-section">
+            <img src="/pokemon-card-collector/pokemon-collector/assets/pikachu-teo-s_bJPp3W.png" alt="Pokémon Collector Logo" class="game-logo" />
+            <p class="subtitle">Catch, collect, and discover Pokémon! Choose how you want to start:</p>
+        </div>
+
+        <div class="login-card">
+            <button class="login-btn google" id="google-login" aria-label="Sign in with Google">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png" alt="Pikachu" class="btn-icon btn-sprite">
+                Sign in with Google
+            </button>
+            <button class="login-btn email-login" id="email-login" aria-label="Login with Email">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png" alt="Charmander" class="btn-icon btn-sprite">
+                Login with Email
+            </button>
+            <button class="login-btn guest" id="guest-login" aria-label="Continue as Guest">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/133.png" alt="Eevee" class="btn-icon btn-sprite">
+                Continue as Guest
+            </button>
+            <br/>
+
+            <button class="login-btn email-register" id="email-register" aria-label="Register with Email">
+                <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/39.png" alt="Jigglypuff" class="btn-icon btn-sprite">
+                Register with Email
+            </button>
+        </div>
+    </div>
+    <!-- Email Modal -->
+    <div id="email-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-card">
+            <button class="close-modal" id="close-modal" aria-label="Close">&times;</button>
+            <div id="modal-login" class="modal-form">
+                <h2 class="modal-title">Login with Email</h2>
+                <input type="email" id="login-email" class="modal-input" placeholder="Email" autocomplete="email" required>
+                <input type="password" id="login-password" class="modal-input" placeholder="Password" autocomplete="current-password" required>
+                <button class="login-btn email-login" id="submit-login">Login</button>
+                <p class="modal-switch">Don't have an account? <a href="#" id="switch-to-register">Register</a></p>
+            </div>
+            <div id="modal-register" class="modal-form" style="display:none;">
+                <h2 class="modal-title">Register with Email</h2>
+                <input type="email" id="register-email" class="modal-input" placeholder="Email" autocomplete="email" required>
+                <input type="password" id="register-password" class="modal-input" placeholder="Password" autocomplete="new-password" required>
+                <input type="password" id="register-confirm" class="modal-input" placeholder="Confirm Password" autocomplete="new-password" required>
+                <button class="login-btn email-register" id="submit-register">Register</button>
+                <p class="modal-switch">Already have an account? <a href="#" id="switch-to-login">Login</a></p>
+            </div>
+        </div>
+    </div>
+    <!-- Home Settings Modal -->
+    <div id="home-settings-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-card home-settings-modal-card">
+            <button class="close-modal" id="close-home-settings" aria-label="Close">&times;</button>
+            <h2 class="modal-title">⚙️ Settings</h2>
+            <div class="home-settings-body">
+                <label class="home-settings-label">⚽ Pokéball distance</label>
+                <div class="radius-options" id="radius-options">
+                    <button class="radius-opt" data-value="20">
+                        <span class="radius-icon">🎯</span>
+                        <span class="radius-name">Extreme</span>
+                        <span class="radius-dist">20 m</span>
+                    </button>
+                    <button class="radius-opt" data-value="50">
+                        <span class="radius-icon">🏃</span>
+                        <span class="radius-name">Short</span>
+                        <span class="radius-dist">50 m</span>
+                    </button>
+                    <button class="radius-opt" data-value="100">
+                        <span class="radius-icon">🚶</span>
+                        <span class="radius-name">Medium</span>
+                        <span class="radius-dist">100 m</span>
+                    </button>
+                    <button class="radius-opt selected" data-value="150">
+                        <span class="radius-icon">🗺️</span>
+                        <span class="radius-name">Normal</span>
+                        <span class="radius-dist">150 m</span>
+                    </button>
+                    <button class="radius-opt" data-value="300">
+                        <span class="radius-icon">🌲</span>
+                        <span class="radius-name">Far</span>
+                        <span class="radius-dist">300 m</span>
+                    </button>
+                    <button class="radius-opt" data-value="500">
+                        <span class="radius-icon">🏔️</span>
+                        <span class="radius-name">Epic</span>
+                        <span class="radius-dist">500 m</span>
+                    </button>
+                </div>
+                <p class="settings-hint" id="radius-hint">Pokéball will be hidden ~150 m from you.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        navigator.geolocation.getCurrentPosition = (success) => {
+            success({
+                coords: {
+                    latitude: 40.7128,
+                    longitude: -74.0060
+                }
+            });
+        };
+    </script>
+
+
+</body>
+</html>
