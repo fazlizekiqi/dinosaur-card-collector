@@ -4,11 +4,10 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 jobs:
   build-and-deploy:
@@ -23,19 +22,17 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies (and create package-lock.json)
+      - name: Install dependencies
         run: npm install
 
       - name: Build Vite app
         run: npm run build
 
-      - name: Upload build output
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to GitHub Pages (root)
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          path: './dist'
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
-
-      # Optional: clean up package-lock.json
-      - name: Remove package-lock.json
-        run: rm package-lock.json
+          branch: gh-pages
+          folder: dist
+          clean: true
+          clean-exclude: |
+            pokemon-collector
