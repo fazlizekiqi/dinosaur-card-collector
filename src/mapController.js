@@ -9,7 +9,7 @@
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl            from 'maplibre-gl';
 import { state }             from './appState.js';
-import { MAP_CONFIG, ROUTING_CONFIG } from './config.js';
+import { MAP_CONFIG, ROUTING_CONFIG, GAME_CONFIG } from './config.js';
 import { distanceBetween }   from './geoUtils.js';
 
 // ─── Map creation ─────────────────────────────────────────────────────────────
@@ -38,26 +38,44 @@ export function createMap(playerCoords) {
 /**
  * Fly the camera in to the player's position and play the cloud disperse
  * animation.  Locks the zoom level once the fly-in completes.
+ *
+ * The zoom adapts to the search radius: closer radii zoom in further so the
+ * Pokéball is always comfortably visible on screen without extra walking.
+ * Each time the radius doubles, the zoom steps one level out (and vice versa).
  */
 export function flyInToPlayerAndRevealMap(playerCoords) {
     const { map } = state;
     const [lat, lng] = playerCoords;
 
+    const targetZoom = zoomLevelForSearchRadius(state.searchRadiusMeters);
+
     playCloudDisperseAnimation();
 
     map.flyTo({
         center:    [lng, lat],
-        zoom:      MAP_CONFIG.flyInZoom,
+        zoom:      targetZoom,
         speed:     1.2,
         curve:     1.5,
         essential: true,
     });
 
     map.once('moveend', () => {
-        map.setMinZoom(MAP_CONFIG.flyInZoom);
-        map.setMaxZoom(MAP_CONFIG.flyInZoom);
+        map.setMinZoom(targetZoom);
+        map.setMaxZoom(targetZoom);
         hideCloudOverlay();
     });
+}
+
+/**
+ * Calculate the map zoom level for a given search radius.
+ * Anchored at zoom 17 for the default 150 m radius.
+ * Each doubling of the radius steps one zoom level out; each halving steps in.
+ * Clamped to [14, 19] so the map stays usable at extreme settings.
+ */
+function zoomLevelForSearchRadius(radiusMeters) {
+    const zoom = MAP_CONFIG.flyInZoom
+        - Math.log2(radiusMeters / GAME_CONFIG.defaultSearchRadiusMeters);
+    return Math.round(Math.min(19, Math.max(14, zoom)));
 }
 
 /**

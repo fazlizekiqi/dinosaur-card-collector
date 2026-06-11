@@ -6,13 +6,14 @@
  * The implementation details live in the focused modules imported below.
  */
 
-import { state }                             from './appState.js';
+import { state, resetForNewSession }          from './appState.js';
 import { GAME_CONFIG, STORAGE_KEYS, APP_ROUTES } from './config.js';
 
 import { resetPlayerMarker,
          placeOrMovePlayerMarker,
          faceDirectionFromHeading,
          injectPlayerMarkerStyles }          from './playerMarker.js';
+import { resetPokeballMarker }               from './pokeballMarker.js';
 
 import { createMap,
          flyInToPlayerAndRevealMap,
@@ -34,8 +35,11 @@ import { setupDevPanel }                     from './devPanel.js';
 // ─── Entry point ──────────────────────────────────────────────────────────────
 
 export function initGame() {
-    // Reset any leftover state from a previous session
+    // JS modules are cached — state persists between loadGameScreen() calls.
+    // Reset everything so a second (or third) sign-in starts completely fresh.
+    resetForNewSession();
     resetPlayerMarker();
+    resetPokeballMarker();
     loadSearchRadiusFromSettings();
     initializeCardDeck();
 

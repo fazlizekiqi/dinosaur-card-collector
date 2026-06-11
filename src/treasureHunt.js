@@ -20,7 +20,22 @@ import { updateTemperatureGlow,
          showPokemonSilhouette,
          hidePokemonSilhouette }            from './visualFeedback.js';
 
-// ─── Proximity hints ──────────────────────────────────────────────────────────
+// ─── Proximity helpers ────────────────────────────────────────────────────────
+
+/**
+ * Calculate the catch zone for a given search radius.
+ * Scales proportionally so short-range hunts (20 m) still need the child to
+ * get genuinely close, while long-range hunts are caught at a comfortable GPS
+ * accuracy margin.
+ *
+ * catch zone = radius × catchZonePercent
+ *              clamped to [catchZoneMinMeters … catchZoneMaxMeters]
+ */
+function catchDistanceForRadius(radiusMeters) {
+    const { catchZonePercent, catchZoneMinMeters, catchZoneMaxMeters } = GAME_CONFIG;
+    const raw = radiusMeters * catchZonePercent;
+    return Math.round(Math.min(catchZoneMaxMeters, Math.max(catchZoneMinMeters, raw)));
+}
 
 /**
  * Normalise the player's distance into a 0–1 ratio across the playable range.
@@ -29,7 +44,7 @@ import { updateTemperatureGlow,
  */
 function computeProximityRatio(distanceMeters) {
     const searchRadius  = state.currentPokeballRadius;
-    const catchZone     = GAME_CONFIG.catchDistanceMeters;
+    const catchZone     = catchDistanceForRadius(searchRadius);
     const playableRange = searchRadius - catchZone;
     return (distanceMeters - catchZone) / playableRange;
 }
@@ -98,7 +113,7 @@ export function checkIfPlayerFoundPokeball() {
     speakHint(hint.spoken);
     updateTemperatureGlow(proximityRatio);
 
-    if (distanceToTreasure <= GAME_CONFIG.catchDistanceMeters) {
+    if (distanceToTreasure <= catchDistanceForRadius(state.currentPokeballRadius)) {
         celebratePokemonCatch();
     }
 }

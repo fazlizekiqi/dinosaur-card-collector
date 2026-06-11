@@ -20,6 +20,14 @@ const POKEBALL_SVG = `
 
 let activePokeballMarker = null;
 
+/** Remove the active Pokéball marker so a fresh session starts clean. */
+export function resetPokeballMarker() {
+    if (activePokeballMarker) {
+        try { activePokeballMarker.remove(); } catch (_) {}
+        activePokeballMarker = null;
+    }
+}
+
 /**
  * Place a Pokéball marker at the given [lat, lng] coordinates.
  * Removes the current marker first if one already exists.

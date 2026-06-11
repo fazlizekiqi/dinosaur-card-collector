@@ -43,8 +43,25 @@ export const ROUTING_CONFIG = {
 export const GAME_CONFIG = {
     /** Default radius (metres) within which a new Pokéball is placed. */
     defaultSearchRadiusMeters: 150,
-    /** Player must be this close (metres) to the Pokéball to catch it. */
-    catchDistanceMeters:       15,
+
+    /**
+     * Catch zone scales with the search radius so short-range hunts still feel
+     * rewarding without requiring pin-point GPS accuracy.
+     *
+     *   catchDistance = radius × catchZonePercent
+     *   … clamped between catchZoneMinMeters and catchZoneMaxMeters
+     *
+     * Examples at default values:
+     *   20 m radius → 8 m catch zone  (GPS accuracy floor)
+     *  100 m radius → 10 m catch zone
+     *  150 m radius → 15 m catch zone  ← the original fixed value
+     *  300 m radius → 20 m catch zone  (capped)
+     *  500 m radius → 20 m catch zone  (capped)
+     */
+    catchZonePercent:    0.10,
+    catchZoneMinMeters:     8,   // GPS accuracy floor — never smaller than this
+    catchZoneMaxMeters:    20,   // comfortable upper cap for large radii
+
     /** Step size in degrees when moving with keyboard in dev mode. */
     devMoveStepDegrees:        0.00025,
     /** Delay (ms) before showing the "find next Pokéball" message. */
