@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Top half (red) -->
+  <path d="M4 32 A28 28 0 0 1 60 32 Z" fill="#cc0000"/>
+  <!-- Bottom half (white) -->
+  <path d="M4 32 A28 28 0 0 0 60 32 Z" fill="#ffffff"/>
+  <!-- Centre band -->
+  <rect x="4" y="29.5" width="56" height="5" fill="#111111" rx="2"/>
+  <!-- Centre button outer ring -->
+  <circle cx="32" cy="32" r="10" fill="#111111"/>
+  <!-- Centre button white -->
+  <circle cx="32" cy="32" r="7"  fill="#ffffff"/>
+  <!-- Centre button highlight -->
+  <circle cx="29" cy="29" r="2.5" fill="rgba(255,255,255,0.7)"/>
+</svg>
+

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Pokémon Card Collector</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -11,8 +12,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,700;0,900&display=swap" rel="stylesheet">
     <link rel="manifest" href="/dinosaur-card-collector/pokemon-collector/manifest.json"/>
-  <script type="module" crossorigin src="/dinosaur-card-collector/pokemon-collector/assets/index-p5WnFA1L.js"></script>
-  <link rel="stylesheet" crossorigin href="/dinosaur-card-collector/pokemon-collector/assets/index-vEmliDNQ.css">
+    <link rel="icon" type="image/svg+xml" href="/dinosaur-card-collector/pokemon-collector/favicon.svg"/>
+  <script type="module" crossorigin src="/dinosaur-card-collector/pokemon-collector/assets/index-550cmgC0.js"></script>
+  <link rel="stylesheet" crossorigin href="/dinosaur-card-collector/pokemon-collector/assets/index-BtrFahjO.css">
 </head>
 <body>
     <div class="background"></div>
@@ -124,14 +126,14 @@
     </div>
 
     <script>
-        // navigator.geolocation.getCurrentPosition = (success) => {
-        //     success({
-        //         coords: {
-        //             latitude: 40.7128,
-        //             longitude: -74.0060
-        //         }
-        //     });
-        // };
+        navigator.geolocation.getCurrentPosition = (success) => {
+            success({
+                coords: {
+                    latitude: 40.7128,
+                    longitude: -74.0060
+                }
+            });
+        };
     </script>
 
 
