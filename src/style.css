@@ -727,3 +727,84 @@ html, body {
         padding: 1rem 0.5rem;
     }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Kids features — temperature glow + silhouette teaser
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Temperature glow overlay ────────────────────────────────────────────── */
+
+#temperature-glow {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;                               /* above map, below all UI */
+    transition: background-color 1.0s ease;
+    background-color: transparent;
+}
+
+@keyframes glow-pulse-slow {
+    0%, 100% { opacity: 1;   }
+    50%       { opacity: 0.5; }
+}
+@keyframes glow-pulse-medium {
+    0%, 100% { opacity: 1;   }
+    50%       { opacity: 0.4; }
+}
+@keyframes glow-pulse-fast {
+    0%, 100% { opacity: 1;   }
+    50%       { opacity: 0.3; }
+}
+
+.glow-active.glow-pulse-slow   { animation: glow-pulse-slow   2.8s infinite ease-in-out; }
+.glow-active.glow-pulse-medium { animation: glow-pulse-medium  1.1s infinite ease-in-out; }
+.glow-active.glow-pulse-fast   { animation: glow-pulse-fast    0.45s infinite ease-in-out; }
+
+/* ── Pokémon silhouette teaser ────────────────────────────────────────────── */
+
+#pokemon-silhouette-teaser {
+    position: fixed;
+    bottom: 116px;                            /* above the trainer/Pikachu button */
+    left: 16px;
+    z-index: 100;
+    display: none;                            /* shown by JS when a Pokéball is placed */
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    background: rgba(0, 0, 0, 0.62);
+    border-radius: 18px;
+    padding: 8px 14px 10px;
+    border: 2px solid rgba(255, 215, 0, 0.50);
+    pointer-events: none;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.silhouette-label {
+    color: #FFD700;
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+}
+
+#silhouette-img {
+    width: 68px;
+    height: 68px;
+    object-fit: contain;
+    filter: brightness(0);                    /* black silhouette — no spoilers! */
+    animation: silhouette-breathe 2.4s infinite ease-in-out;
+}
+
+.silhouette-question {
+    color: rgba(255, 215, 0, 0.65);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+}
+
+@keyframes silhouette-breathe {
+    0%, 100% { transform: scale(1);    opacity: 0.85; }
+    50%       { transform: scale(1.06); opacity: 1;    }
+}
+

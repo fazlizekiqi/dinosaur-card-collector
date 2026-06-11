@@ -9,50 +9,54 @@
 import { state }                            from './appState.js';
 import { GAME_CONFIG, STORAGE_KEYS }        from './config.js';
 import { distanceBetween, randomPointNear } from './geoUtils.js';
-import { showNotification }                 from './notifications.js';
+import { showNotification,
+         speakHint, resetSpokenHints }      from './notifications.js';
 import { placePokeballOnMap }               from './pokeballMarker.js';
 import { drawRouteToTreasure, clearRoute }  from './mapController.js';
-import { drawNextCard }                     from './cardCollection.js';
+import { drawNextCard, peekAtNextCard }      from './cardCollection.js';
 import { revealCaughtPokemon }              from './cardReveal.js';
+import { updateTemperatureGlow,
+         clearTemperatureGlow,
+         showPokemonSilhouette,
+         hidePokemonSilhouette }            from './visualFeedback.js';
 
 // ─── Proximity hints ──────────────────────────────────────────────────────────
 
 /**
- * Return a hot/cold hint whose thresholds scale with the difficulty.
- *
- * Instead of fixed distances (which break at extreme radii like 20 m or 500 m),
- * we map the playable range — from the catch zone out to the search radius —
- * onto four equal quarters.
- *
- *   t = 0  →  right at the Pokéball (catch zone)
- *   t = 1  →  as far as the Pokéball could possibly have been placed
- *
- *   t > 0.75  ❄️  outer quarter   → still far, keep walking
- *   t > 0.50  🌬️  third quarter   → closing in
- *   t > 0.25  ☀️  second quarter  → noticeably warmer
- *   t > 0.00  🔥  inner quarter   → very close
- *   t ≤ 0.00  🌋  catch zone      → right on top of it
+ * Normalise the player's distance into a 0–1 ratio across the playable range.
+ *   1 = as far as the Pokéball could have been placed (freezing)
+ *   0 = at the catch boundary (burning)
  */
-function proximityHintFor(distanceMeters) {
-    const searchRadius = state.currentPokeballRadius;
-    const catchZone    = GAME_CONFIG.catchDistanceMeters;
-    const playableRange = searchRadius - catchZone;          // metres between catch edge and max radius
+function computeProximityRatio(distanceMeters) {
+    const searchRadius  = state.currentPokeballRadius;
+    const catchZone     = GAME_CONFIG.catchDistanceMeters;
+    const playableRange = searchRadius - catchZone;
+    return (distanceMeters - catchZone) / playableRange;
+}
 
-    // Normalise: 0 = at catch boundary, 1 = at maximum possible distance
-    const t = (distanceMeters - catchZone) / playableRange;
-
-    if (t > 0.75) return '❄️ Freezing cold… keep walking!';
-    if (t > 0.50) return '🌬️ Still cold… getting closer…';
-    if (t > 0.25) return '☀️ Warm! You\'re getting there!';
-    if (t > 0.00) return '🔥 Hot! Almost there!';
-    return               '🌋 BURNING!! The Pokéball is right here!!!';
+/**
+ * Return both a visual (emoji) and spoken hint for the given proximity ratio.
+ * Spoken text is deliberately emoji-free and phrased for young children.
+ *
+ *   t > 0.75  ❄️  outer quarter  → still far, keep walking
+ *   t > 0.50  🌬️  third quarter  → closing in
+ *   t > 0.25  ☀️  second quarter → noticeably warmer
+ *   t > 0.00  🔥  inner quarter  → very close
+ *   t ≤ 0.00  🌋  catch zone     → right on top of it
+ */
+function proximityHintFor(t) {
+    if (t > 0.75) return { display: '❄️ Freezing cold… keep walking!',          spoken: 'Brrr! Still far away. Keep walking!' };
+    if (t > 0.50) return { display: '🌬️ Still cold… getting closer…',           spoken: 'Getting closer! Keep going!' };
+    if (t > 0.25) return { display: '☀️ Warm! You\'re getting there!',           spoken: 'Getting warm! You are getting there!' };
+    if (t > 0.00) return { display: '🔥 Hot! Almost there!',                    spoken: 'Hot! Almost there!' };
+    return               { display: '🌋 BURNING!! The Pokéball is right here!!!', spoken: 'Burning! The Pokeball is right here!' };
 }
 
 // ─── Treasure placement ───────────────────────────────────────────────────────
 
 /**
- * Drop a new Pokéball at a random spot near the player and draw
- * the walking route to it.
+ * Drop a new Pokéball at a random spot near the player, draw the walking route,
+ * and show the silhouette of the Pokémon hidden inside it.
  */
 export function placeNewPokeball() {
     const radiusMeters = parseInt(
@@ -68,20 +72,31 @@ export function placeNewPokeball() {
     state.treasureCoords = randomPointNear(state.playerCoords, radiusMeters);
     placePokeballOnMap(state.treasureCoords, state.map);
     drawRouteToTreasure(state.playerCoords, state.treasureCoords);
+
+    // Show the silhouette of who's hiding in this Pokéball
+    showPokemonSilhouette(peekAtNextCard());
+
+    // Reset voice so the first hint of the new hunt is always spoken aloud
+    resetSpokenHints();
 }
 
 // ─── Win detection ────────────────────────────────────────────────────────────
 
 /**
- * Called on every GPS update.  Shows a hot/cold hint and triggers the
- * catch celebration when the player is close enough to the Pokéball.
+ * Called on every GPS update.  Updates the glow, speaks the hint, shows it
+ * in the toast bar, and triggers the catch celebration when close enough.
  */
 export function checkIfPlayerFoundPokeball() {
     const { playerCoords, treasureCoords, isCollectingCard } = state;
     if (!playerCoords || !treasureCoords || isCollectingCard) return;
 
     const distanceToTreasure = distanceBetween(playerCoords, treasureCoords);
-    showNotification(proximityHintFor(distanceToTreasure));
+    const proximityRatio     = computeProximityRatio(distanceToTreasure);
+    const hint               = proximityHintFor(proximityRatio);
+
+    showNotification(hint.display);
+    speakHint(hint.spoken);
+    updateTemperatureGlow(proximityRatio);
 
     if (distanceToTreasure <= GAME_CONFIG.catchDistanceMeters) {
         celebratePokemonCatch();
@@ -92,7 +107,10 @@ export function checkIfPlayerFoundPokeball() {
 
 function celebratePokemonCatch() {
     state.isCollectingCard = true;
+
     clearRoute();
+    clearTemperatureGlow();
+    hidePokemonSilhouette();
 
     const { card, cycleComplete } = drawNextCard();
 
@@ -101,8 +119,8 @@ function celebratePokemonCatch() {
         : '⚽ You found the Pokéball! Amazing!';
     showNotification(catchMessage);
 
-    revealCaughtPokemon(card);      // Show the card overlay with fireworks
-    placeNewPokeball();             // Place the next Pokéball straight away
+    revealCaughtPokemon(card);  // Show the card overlay with fireworks
+    placeNewPokeball();         // Place the next Pokéball (and show next silhouette)
 
     setTimeout(() => {
         state.isCollectingCard = false;

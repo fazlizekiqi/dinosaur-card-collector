@@ -88,6 +88,16 @@ export function getCurrentCard() {
     return currentCard;
 }
 
+/**
+ * Peek at the next card that WILL be drawn without removing it from the deck.
+ * Used to show the silhouette teaser while the player is hunting.
+ * Returns null when the deck is empty (end-of-cycle boundary).
+ */
+export function peekAtNextCard() {
+    if (remainingCards.length === 0) return null;
+    return remainingCards[remainingCards.length - 1];
+}
+
 /** Number of cards collected so far this cycle. */
 export function getCollectedCount() {
     return collectedCards.length;

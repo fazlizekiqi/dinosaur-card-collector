@@ -177,7 +177,7 @@ function renderRouteOnMap(waypoints) {
 
 async function fetchWalkingRoute(from, to, signal) {
     const { apiKey, baseUrl } = ROUTING_CONFIG;
-    const url = `${baseUrl}?api_key=${apiKey}&start=${from[1]},${from[0]}&end=${to[1]},${to[0]}`;
+    const url      = `${baseUrl}?api_key=${apiKey}&start=${from[1]},${from[0]}&end=${to[1]},${to[0]}`;
     const response = await fetch(url, { signal });
     const data     = await response.json();
     return data.features[0].geometry.coordinates;

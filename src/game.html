@@ -1,9 +1,19 @@
 <div id="game-message"></div>
 
-<!-- Hidden card store — populated by showCard.js -->
+<!-- Full-screen colour tint that warms from blue → red as the player closes in -->
+<div id="temperature-glow"></div>
+
+<!-- Hidden card store — populated by cardCollection.js -->
 <div id="collected-cards" style="display:none;"></div>
 
 <div id="map"></div>
+
+<!-- Bottom-left: silhouette teaser (above the trainer button) -->
+<div id="pokemon-silhouette-teaser">
+    <span class="silhouette-label">👀 Who's hiding?</span>
+    <img id="silhouette-img" src="" alt="???" />
+    <span class="silhouette-question">? ? ?</span>
+</div>
 
 <!-- Bottom-left: Pokémon helper button -->
 <button id="fullscreen-btn" title="Meet your Pokémon Friend"
