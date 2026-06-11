@@ -257,50 +257,6 @@ html, body {
 }
 
 
-/* Pokémon trainer intro modal */
-#dino-collector-modal {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: rgba(0,0,0,0.72);
-    z-index: 10000;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-}
-
-#dino-collector-modal.show {
-    display: flex;
-}
-
-.speech-bubble {
-    background: rgba(255, 255, 255, 0.97);
-    color: #c0392b;
-    border-radius: 20px;
-    padding: 18px 32px;
-    font-size: 1.05rem;
-    font-weight: 700;
-    box-shadow: 0 2px 20px rgba(192,57,43,0.25), 0 0 0 3px #FFD700;
-    position: relative;
-    max-width: 340px;
-    margin-bottom: 24px;
-    text-align: center;
-    border: 2px solid #FFD700;
-}
-
-.speech-bubble:after {
-    content: '';
-    position: absolute;
-    bottom: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-width: 20px 18px 0;
-    border-style: solid;
-    border-color: rgba(255,255,255,0.97) transparent transparent transparent;
-    display: block;
-    width: 0;
-}
 
 /* ── HOME ── */
 .home-container {
@@ -764,7 +720,7 @@ html, body {
 
 #pokemon-silhouette-teaser {
     position: fixed;
-    bottom: 116px;                            /* above the trainer/Pikachu button */
+    bottom: 24px;                             /* sits in the bottom-left corner */
     left: 16px;
     z-index: 100;
     display: none;                            /* shown by JS when a Pokéball is placed */

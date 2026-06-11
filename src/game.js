@@ -54,16 +54,17 @@ export function initGame() {
     // Set up the dev tools panel (keyboard movement + compass tester)
     setupDevPanel(onDevModePositionChanged);
 
-    // iOS requires a user gesture before we can ask for compass permission.
-    // On all other devices we can start tracking right away.
-    const isIOSDevice = deviceNeedsGestureForCompassPermission;
+    // Start GPS tracking immediately — no intro modal needed.
+    // On iOS the compass needs a user gesture to grant permission; we listen
+    // for the player's first tap on the game screen so it feels seamless.
+    if (deviceNeedsGestureForCompassPermission) {
+        requestCompassPermissionOnFirstPlayerGesture();
+    } else {
+        requestCompassAndStartListening(onCompassHeadingChanged);
+    }
+    startWatchingPlayerPosition(onPlayerPositionChanged);
 
-    wireUpIntroModal({
-        showImmediately: isIOSDevice,
-        onPlayerReadyToStart: startGameSession,
-    });
-
-    showWelcomeMessage(isIOSDevice);
+    showNotification('Finding your location…');
 }
 
 // ─── Session start ────────────────────────────────────────────────────────────
@@ -71,6 +72,19 @@ export function initGame() {
 function startGameSession() {
     requestCompassAndStartListening(onCompassHeadingChanged);
     startWatchingPlayerPosition(onPlayerPositionChanged);
+}
+
+/**
+ * On iOS 13+ DeviceOrientation permission must come from a user gesture.
+ * Instead of forcing the player through an intro modal we simply listen for
+ * their first tap on the game screen and silently request permission then.
+ */
+function requestCompassPermissionOnFirstPlayerGesture() {
+    const onFirstGesture = () => {
+        requestCompassAndStartListening(onCompassHeadingChanged);
+    };
+    document.addEventListener('touchstart', onFirstGesture, { once: true });
+    document.addEventListener('click',      onFirstGesture, { once: true });
 }
 
 // ─── GPS and compass callbacks ────────────────────────────────────────────────
@@ -130,29 +144,6 @@ function loadSearchRadiusFromSettings() {
     );
 }
 
-// ─── Intro / trainer modal ────────────────────────────────────────────────────
-
-function wireUpIntroModal({ showImmediately, onPlayerReadyToStart }) {
-    const modal    = document.getElementById('dino-collector-modal');
-    const closeBtn = document.getElementById('close-dino-modal-btn');
-    const openBtn  = document.getElementById('fullscreen-btn');
-
-    // The button in the bottom-left re-opens the trainer modal at any time
-    openBtn.addEventListener('click', () => modal.classList.add('show'));
-
-    closeBtn.addEventListener('click', () => {
-        modal.classList.remove('show');
-        modal.style.display = 'none';
-        // On iOS this button also serves as the "grant permission" gesture
-        if (showImmediately) onPlayerReadyToStart();
-    });
-
-    if (showImmediately) {
-        modal.style.display = 'flex';   // iOS: show before game starts
-    } else {
-        onPlayerReadyToStart();         // Non-iOS: start immediately
-    }
-}
 
 // ─── Collection modal ─────────────────────────────────────────────────────────
 
@@ -273,11 +264,3 @@ function preventDoubleTapZoom() {
     }, { passive: false });
 }
 
-function showWelcomeMessage(waitingForGesture) {
-    hideNotification();
-    showNotification(
-        waitingForGesture
-            ? "Tap ⚽ Let's go to start!"
-            : 'Finding your location…'
-    );
-}

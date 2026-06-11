@@ -60,8 +60,10 @@ export function flyInToPlayerAndRevealMap(playerCoords) {
     });
 
     map.once('moveend', () => {
+        // Lock the minimum zoom so the player can't accidentally zoom too far out
+        // and get disoriented.  The maximum is left open so they can pinch in for
+        // more street/building detail whenever they need it.
         map.setMinZoom(targetZoom);
-        map.setMaxZoom(targetZoom);
         hideCloudOverlay();
     });
 }
@@ -70,12 +72,13 @@ export function flyInToPlayerAndRevealMap(playerCoords) {
  * Calculate the map zoom level for a given search radius.
  * Anchored at zoom 17 for the default 150 m radius.
  * Each doubling of the radius steps one zoom level out; each halving steps in.
- * Clamped to [14, 19] so the map stays usable at extreme settings.
+ * Capped at zoom 18 — the level where all standard vector tile styles reliably
+ * show individual buildings and apartments without over-zooming past the tile data.
  */
 function zoomLevelForSearchRadius(radiusMeters) {
     const zoom = MAP_CONFIG.flyInZoom
         - Math.log2(radiusMeters / GAME_CONFIG.defaultSearchRadiusMeters);
-    return Math.round(Math.min(19, Math.max(14, zoom)));
+    return Math.round(Math.min(18, Math.max(14, zoom)));
 }
 
 /**

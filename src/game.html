@@ -8,18 +8,13 @@
 
 <div id="map"></div>
 
-<!-- Bottom-left: silhouette teaser (above the trainer button) -->
+<!-- Bottom-left: silhouette teaser (shown while hunting) -->
 <div id="pokemon-silhouette-teaser">
     <span class="silhouette-label">👀 Who's hiding?</span>
     <img id="silhouette-img" src="" alt="???" />
     <span class="silhouette-question">? ? ?</span>
 </div>
 
-<!-- Bottom-left: Pokémon helper button -->
-<button id="fullscreen-btn" title="Meet your Pokémon Friend"
-        style="font-size:16px;position:fixed;bottom:24px;left:24px;z-index:1000;background:rgba(192,57,43,0.75);border:2px solid rgba(255,215,0,0.6);border-radius:50%;box-shadow:0 2px 12px rgba(0,0,0,0.55);width:5rem;height:5rem;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-    <img src="pikachu-teo.png" alt="Pokémon Trainer" style="width:4.5em;height:auto;border-radius:5em;image-rendering:pixelated;">
-</button>
 
 <!-- Top-right HUD cluster -->
 <div id="top-right-hud">
@@ -73,19 +68,6 @@
     </div>
 </div>
 
-<!-- Pokémon trainer intro modal -->
-<div id="dino-collector-modal" class=""
-     style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.75);z-index:10000;justify-content:center;align-items:center;flex-direction:column;">
-    <div class="speech-bubble">
-        Hi, I'm your Pokémon Trainer friend!<br>
-        Let's find Pokéballs and catch Pokémon together!
-    </div>
-    <img src="wave-dino-collector.png" alt="Pokémon Trainer" style="width:180px;height:auto;border-radius:16px;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.4));"/>
-    <button id="close-dino-modal-btn"
-            style="margin-top:24px;font-size:18px;background:#FFD700;color:#7f0000;border:none;border-radius:14px;padding:12px 32px;font-weight:900;box-shadow:0 2px 16px rgba(255,215,0,0.4);cursor:pointer;letter-spacing:0.5px;">
-        Let's go! ⚽
-    </button>
-</div>
 
 <!-- Cloud overlay -->
 <div id="cloud-overlay"
