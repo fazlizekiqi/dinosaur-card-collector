@@ -15,7 +15,7 @@
 import { state }                     from './appState.js';
 import { GAME_CONFIG }               from './config.js';
 import { faceDirectionFromHeading }  from './playerMarker.js';
-import { centreMapOnPlayer }         from './mapController.js';
+import { updateDirectionGuide }      from './directionGuide.js';
 
 /**
  * Attach the dev panel to the DOM and register keyboard movement.
@@ -68,7 +68,7 @@ function buildHeadingPanel() {
         slider.value           = heading;
         state.compassHeading   = heading;
         faceDirectionFromHeading(heading);
-        if (state.playerCoords) centreMapOnPlayer(state.playerCoords, heading);
+        updateDirectionGuide();
     }
 
     slider.addEventListener('input', () => applyHeading(Number(slider.value)));
@@ -119,7 +119,7 @@ function exposeConsoleHelpers() {
     window.testHeading = (degrees) => {
         state.compassHeading = degrees;
         faceDirectionFromHeading(degrees);
-        if (state.playerCoords) centreMapOnPlayer(state.playerCoords, degrees);
+        updateDirectionGuide();
     };
 }
 

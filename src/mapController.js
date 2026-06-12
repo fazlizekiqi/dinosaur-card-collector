@@ -27,7 +27,19 @@ export function createMap(playerCoords) {
         center:             [lng, lat],
         zoom:               MAP_CONFIG.initialZoom,
         attributionControl: true,
+        // The map is always north-up: rotation made it impossible for a young
+        // child to keep their bearings.  Direction feedback comes from the
+        // directionGuide arrow + chip instead.
+        bearing:            0,
+        pitch:              0,
+        dragRotate:         false,
+        pitchWithRotate:    false,
+        touchPitch:         false,
     });
+
+    // Two-finger twist rotation must be disabled separately from dragRotate
+    map.touchZoomRotate.disableRotation();
+    map.keyboard?.disableRotation?.();
 
     state.map = map;
     return map;
@@ -83,24 +95,14 @@ function zoomLevelForSearchRadius(radiusMeters) {
 
 /**
  * Keep the map centred on the player as they walk.
- * When a heading is provided the map rotates so the player always faces up.
+ * The map never rotates — north stays up so the world doesn't spin underfoot.
  */
-export function centreMapOnPlayer(playerCoords, heading = null) {
+export function centreMapOnPlayer(playerCoords) {
     const { map, isMapReady } = state;
     if (!map || !isMapReady || !playerCoords) return;
 
     const [lat, lng] = playerCoords;
-
-    if (heading !== null) {
-        map.easeTo({
-            bearing:  -heading,
-            center:   [lng, lat],
-            duration: 300,
-            easing:   t => t,
-        });
-    } else {
-        map.easeTo({ center: [lng, lat], duration: 300 });
-    }
+    map.easeTo({ center: [lng, lat], duration: 300 });
 }
 
 // ─── Walking route ────────────────────────────────────────────────────────────

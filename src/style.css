@@ -720,8 +720,8 @@ html, body {
 
 #pokemon-silhouette-teaser {
     position: fixed;
-    bottom: 24px;                             /* sits in the bottom-left corner */
-    left: 16px;
+    bottom: 24px;                             /* bottom-right — the helper button owns bottom-left */
+    right: 16px;
     z-index: 100;
     display: none;                            /* shown by JS when a Pokéball is placed */
     flex-direction: column;
@@ -762,5 +762,91 @@ html, body {
 @keyframes silhouette-breathe {
     0%, 100% { transform: scale(1);    opacity: 0.85; }
     50%       { transform: scale(1.06); opacity: 1;    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Direction guide — north-up map navigation aid (directionGuide.js)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Edge arrow pointing toward the Pokéball ──────────────────────────────── */
+
+#direction-guide-arrow {
+    position: fixed;
+    display: none;                            /* shown by JS when off course */
+    transform: translate(-50%, -50%);         /* JS sets left/top to the centre point */
+    align-items: center;
+    justify-content: center;
+    z-index: 900;                             /* above map + glow, below modals */
+    pointer-events: none;
+}
+
+/* The rotor spins the arrow toward the Pokéball */
+.arrow-rotor {
+    width: 96px;
+    height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(var(--arrow-rotation, 0deg));
+    transition: transform 0.3s ease;
+}
+
+.arrow-svg {
+    width: 84px;
+    height: 84px;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
+    animation: arrow-nudge 0.8s infinite ease-in-out;
+}
+
+/* Nudges along the rotor's local Y axis = in the pointing direction */
+@keyframes arrow-nudge {
+    0%, 100% { translate: 0 0;     }
+    50%       { translate: 0 -12px; }
+}
+
+/* ── Distance chip — colour is the signal (green = right way, red = wrong) ── */
+
+#direction-status-chip {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 18px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;                            /* shown via .course-* classes */
+    padding: 9px 20px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    background: rgba(255, 255, 255, 0.97);
+    white-space: nowrap;
+    z-index: 900;
+    pointer-events: none;
+}
+
+#direction-status-chip.course-good {
+    display: block;
+    color: #1e8e3e;
+    border: 3px solid #2db84d;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.25), 0 0 14px rgba(45, 184, 77, 0.65);
+}
+
+#direction-status-chip.course-bad {
+    display: block;
+    color: #c0392b;
+    border: 3px solid #ff5a3c;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.25), 0 0 14px rgba(255, 90, 60, 0.7);
+    animation: chip-attention 1.4s infinite ease-in-out;
+}
+
+#direction-status-chip.course-neutral {
+    display: block;
+    color: #382110;
+    border: 3px solid #FFD700;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.25), 0 0 14px rgba(255, 215, 0, 0.55);
+}
+
+@keyframes chip-attention {
+    0%, 100% { scale: 1;    }
+    50%       { scale: 1.08; }
 }
 

@@ -19,6 +19,10 @@ import { updateTemperatureGlow,
          clearTemperatureGlow,
          showPokemonSilhouette,
          hidePokemonSilhouette }            from './visualFeedback.js';
+import { updateDirectionGuide,
+         hideDirectionGuide }               from './directionGuide.js';
+import { showCatchZoneRing,
+         hideCatchZoneRing }                from './catchZoneRing.js';
 
 // ─── Proximity helpers ────────────────────────────────────────────────────────
 
@@ -86,10 +90,14 @@ export function placeNewPokeball() {
 
     state.treasureCoords = randomPointNear(state.playerCoords, radiusMeters);
     placePokeballOnMap(state.treasureCoords, state.map);
+    showCatchZoneRing(state.treasureCoords, catchDistanceForRadius(radiusMeters));
     drawRouteToTreasure(state.playerCoords, state.treasureCoords);
 
     // Show the silhouette of who's hiding in this Pokéball
     showPokemonSilhouette(peekAtNextCard());
+
+    // Point the direction guide at the new Pokéball straight away
+    updateDirectionGuide();
 
     // Reset voice so the first hint of the new hunt is always spoken aloud
     resetSpokenHints();
@@ -123,9 +131,14 @@ export function checkIfPlayerFoundPokeball() {
 function celebratePokemonCatch() {
     state.isCollectingCard = true;
 
+    // Victory buzz — pairs with the fireworks (Android only; no-op on iOS)
+    navigator.vibrate?.([100, 50, 100, 50, 250]);
+
     clearRoute();
     clearTemperatureGlow();
     hidePokemonSilhouette();
+    hideDirectionGuide();
+    hideCatchZoneRing();
 
     const { card, cycleComplete } = drawNextCard();
 

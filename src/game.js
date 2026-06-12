@@ -28,6 +28,9 @@ import { initializeCardDeck }                from './cardCollection.js';
 import { placeNewPokeball,
          checkIfPlayerFoundPokeball }        from './treasureHunt.js';
 
+import { updateDirectionGuide,
+         resetDirectionGuide }                from './directionGuide.js';
+import { resetCatchZoneRing }                 from './catchZoneRing.js';
 import { showNotification, hideNotification } from './notifications.js';
 import { signOutCurrentUser, getFirebaseAuth } from './firebase.js';
 import { setupDevPanel }                     from './devPanel.js';
@@ -40,6 +43,8 @@ export function initGame() {
     resetForNewSession();
     resetPlayerMarker();
     resetPokeballMarker();
+    resetDirectionGuide();
+    resetCatchZoneRing();
     loadSearchRadiusFromSettings();
     initializeCardDeck();
 
@@ -102,14 +107,15 @@ function onPlayerPositionChanged(newCoords) {
 
     placeOrMovePlayerMarker(newCoords, state.map);
     updateRouteStartAsPlayerMoves(newCoords);
-    centreMapOnPlayer(newCoords, state.compassHeading);
+    centreMapOnPlayer(newCoords);
     checkIfPlayerFoundPokeball();
+    updateDirectionGuide();
 }
 
 function onCompassHeadingChanged(heading) {
     state.compassHeading = heading;
     faceDirectionFromHeading(heading);
-    centreMapOnPlayer(state.playerCoords, heading);
+    updateDirectionGuide();
 }
 
 // ─── Map initialisation ───────────────────────────────────────────────────────
@@ -132,6 +138,7 @@ function onDevModePositionChanged(newCoords) {
     placeOrMovePlayerMarker(newCoords, state.map);
     updateRouteStartAsPlayerMoves(newCoords);
     checkIfPlayerFoundPokeball();
+    updateDirectionGuide();
 }
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
