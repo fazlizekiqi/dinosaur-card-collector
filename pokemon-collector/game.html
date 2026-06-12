@@ -67,7 +67,36 @@
     <img class="cloud cloud8" src="clouds.png" alt=""/>
 </div>
 
-<!-- Screen-edge arrow removed — heading-up map rotation used instead -->
+<!-- Direction guide: the map stays north-up; these tell the player whether
+     they are walking toward the Pokéball (chip) or where to turn (edge arrow).
+     Both are positioned/shown by directionGuide.js -->
+<div id="direction-status-chip"></div>
+<div id="direction-guide-arrow">
+    <div class="arrow-rotor">
+        <svg class="arrow-svg" viewBox="0 0 100 100" aria-hidden="true">
+            <defs>
+                <linearGradient id="arrow-gradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#ff8a5c"/>
+                    <stop offset="1" stop-color="#e3350d"/>
+                </linearGradient>
+            </defs>
+            <!-- Chunky kid-friendly arrow, points up; rotor rotates it toward the Pokéball -->
+            <path d="M50 6 L90 52 L66 52 L66 92 L34 92 L34 52 L10 52 Z"
+                  fill="url(#arrow-gradient)"
+                  stroke="#ffffff" stroke-width="7" stroke-linejoin="round"/>
+        </svg>
+    </div>
+</div>
+
+<!-- Temperature glow: full-screen blue→red tint driven by visualFeedback.js -->
+<div id="temperature-glow"></div>
+
+<!-- "Who's hiding?" silhouette teaser of the Pokémon in the active Pokéball -->
+<div id="pokemon-silhouette-teaser">
+    <span class="silhouette-label">WHO'S HIDING?</span>
+    <img id="silhouette-img" src="" alt="???">
+    <span class="silhouette-question">? ? ?</span>
+</div>
 
 <!-- Card celebration -->
 <div id="t-rex-celebration"
