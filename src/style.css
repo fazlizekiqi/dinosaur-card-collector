@@ -772,12 +772,13 @@ html, body {
 
 #direction-guide-arrow {
     position: fixed;
-    display: none;                            /* shown by JS when off course */
+    display: none;                            /* shown by JS while hunting */
     transform: translate(-50%, -50%);         /* JS sets left/top to the centre point */
     align-items: center;
     justify-content: center;
     z-index: 900;                             /* above map + glow, below modals */
     pointer-events: none;
+    transition: left 0.3s ease, top 0.3s ease; /* glides around the screen edge */
 }
 
 /* The rotor spins the arrow toward the Pokéball */

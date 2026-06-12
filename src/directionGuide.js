@@ -1,18 +1,19 @@
 /**
- * directionGuide.js — Kid-friendly "are we walking the right way?" feedback.
+ * directionGuide.js — Kid-friendly "which way do I walk?" feedback.
  *
  * The map stays north-up and never rotates (rotation was disorienting for a
- * young child).  Instead, this module compares the device compass heading
- * with the bearing to the Pokéball and answers one simple question:
- * are we walking toward it or not?
+ * young child).  Instead, a live arrow sweeps around the screen edge,
+ * RELATIVE TO WHERE THE DEVICE IS POINTING:
  *
- *   • On course  → small green "This way!" chip at the top of the screen.
- *   • Off course → big bouncing arrow on the edge of the screen pointing
- *     toward the Pokéball, plus a spoken hint to turn around.
+ *   • Pokéball straight ahead → arrow at the top, pointing up.
+ *   • Pokéball behind you     → arrow at the bottom, pointing down.
+ *   • Turn on the spot        → the arrow orbits the screen in real time.
  *
- * Because the map is always north-up and centred on the player, the on-screen
- * direction to the Pokéball is exactly its compass bearing — so the arrow
- * points correctly even on devices that have no compass at all.
+ * The arrow is always visible during a hunt.  A colour chip backs it up:
+ * green ring = walking the right way, red ring = wrong way (with a spoken
+ * hint + buzz on the transition), gold ring = no compass available — then
+ * the arrow falls back to map-relative (north-up) pointing, which is still
+ * correct because the map is north-up and centred on the player.
  */
 
 import { state }           from './appState.js';
@@ -32,8 +33,9 @@ const SPOKEN_HINT_COOLDOWN_MS = 8_000;
 /** How far the arrow sits in from the screen edges. */
 const EDGE_MARGIN_PX = 80;
 
-let courseState  = null; // 'on' | 'off' | null (unknown)
-let lastSpokenAt = 0;
+let courseState        = null; // 'on' | 'off' | null (unknown)
+let lastSpokenAt       = 0;
+let continuousRotation = 0;    // accumulated arrow rotation in degrees (never wraps)
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
@@ -52,14 +54,19 @@ export function updateDirectionGuide() {
     const bearingToTreasure = bearingBetween(playerCoords, treasureCoords);
     const metersToTreasure  = Math.round(distanceBetween(playerCoords, treasureCoords));
 
-    // No compass (desktop, or permission denied): we can't judge the walking
-    // direction, but the arrow still points correctly on a north-up map —
-    // so just always show it.
+    // No compass (desktop, or permission denied): fall back to map-relative
+    // pointing — still correct because the map is north-up and player-centred.
     if (compassHeading == null) {
         showArrowAt(bearingToTreasure);
         setChip(null, metersToTreasure);
         return;
     }
+
+    // The angle the child must turn through: 0° = Pokéball straight ahead,
+    // 180° = directly behind.  This drives both the arrow's spot on the
+    // screen edge and its rotation, so it tracks every turn in real time.
+    const relativeAngle = (bearingToTreasure - compassHeading + 360) % 360;
+    showArrowAt(relativeAngle);
 
     const drift = smallestAngleBetween(compassHeading, bearingToTreasure);
 
@@ -74,13 +81,7 @@ export function updateDirectionGuide() {
         maybeSpeak('Good job! Keep walking this way!');
     }
 
-    if (courseState === 'off') {
-        showArrowAt(bearingToTreasure);
-        setChip('bad', metersToTreasure);
-    } else {
-        hideArrow();
-        setChip('good', metersToTreasure);
-    }
+    setChip(courseState === 'off' ? 'bad' : 'good', metersToTreasure);
 }
 
 /** Hide both the arrow and the chip (e.g. during the catch celebration). */
@@ -91,31 +92,36 @@ export function hideDirectionGuide() {
 
 /** Reset all guide state so a fresh session / new hunt starts clean. */
 export function resetDirectionGuide() {
-    courseState  = null;
-    lastSpokenAt = 0;
+    courseState        = null;
+    lastSpokenAt       = 0;
+    continuousRotation = 0;
     hideDirectionGuide();
 }
 
 // ─── Private: DOM helpers ─────────────────────────────────────────────────────
 
 /**
- * Place the arrow on an inset ellipse around the screen centre, at the screen
- * angle matching the bearing (north-up map: 0° = straight up), rotated to
- * point outward toward the Pokéball.
+ * Place the arrow on an inset ellipse around the screen centre at the given
+ * screen angle (0° = top of screen, 90° = right, 180° = bottom), rotated to
+ * point outward in that direction.
  */
-function showArrowAt(bearingDegrees) {
+function showArrowAt(angleDegrees) {
     const arrow = document.getElementById('direction-guide-arrow');
     if (!arrow) return;
 
-    const radians = (bearingDegrees * Math.PI) / 180;
+    const radians = (angleDegrees * Math.PI) / 180;
     const dx      = Math.sin(radians);
     const dy      = -Math.cos(radians);
     const x       = window.innerWidth  / 2 + dx * (window.innerWidth  / 2 - EDGE_MARGIN_PX);
     const y       = window.innerHeight / 2 + dy * (window.innerHeight / 2 - EDGE_MARGIN_PX);
 
+    // Accumulate rotation by the shortest step so the CSS transition never
+    // whips the long way around when the angle wraps past 359° → 0°.
+    continuousRotation += shortestDelta(angleDegrees - continuousRotation);
+
     arrow.style.left = `${x}px`;
     arrow.style.top  = `${y}px`;
-    arrow.style.setProperty('--arrow-rotation', `${Math.round(bearingDegrees)}deg`);
+    arrow.style.setProperty('--arrow-rotation', `${Math.round(continuousRotation)}deg`);
     arrow.style.display = 'flex';
 }
 
@@ -152,6 +158,11 @@ function setChip(mood, meters) {
 function smallestAngleBetween(a, b) {
     const diff = Math.abs(a - b) % 360;
     return diff > 180 ? 360 - diff : diff;
+}
+
+/** Signed shortest rotation (-180…180°) from the current angle to the target. */
+function shortestDelta(degrees) {
+    return ((degrees % 360) + 540) % 360 - 180;
 }
 
 function maybeSpeak(text) {
