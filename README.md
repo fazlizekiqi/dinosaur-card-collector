@@ -1,8 +1,12 @@
 ﻿[![Deploy to GitHub Pages](https://github.com/fazlizekiqi/dinosaur-card-collector/actions/workflows/deploy.yml/badge.svg)](https://github.com/fazlizekiqi/dinosaur-card-collector/actions/workflows/deploy.yml)
 # Dinosaur Card Collector
 
-Lets collect some cards: 
+Preview: 
+
 https://fazlizekiqi.github.io/dinosaur-card-collector/ 
+
+
+
 
 Dinosaur Card Collector is a web-based game where users collect, trade, and view digital dinosaur cards. The game features a standalone interface, vibrant visuals, and a fun card-collecting experience for all ages.
 
